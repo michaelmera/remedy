@@ -1,6 +1,8 @@
-# Remy, a reMarkable tablet manager app
+# Remedy, a reMarkable tablet manager app
 
-The goal of Remy is to allow simple interaction with the reMarkable tablet over ssh, without needing the cloud service, nor the USB Web UI.
+NOTE: Remedy is based on [Remy](https://github.com/bordaigorl/remy).
+
+The goal of Remedy is to allow simple interaction with the reMarkable tablet over ssh, without needing the cloud service, nor the USB Web UI.
 
 ![Screenshot](assets/screenshot.jpg)
 
@@ -8,8 +10,8 @@ The goal of Remy is to allow simple interaction with the reMarkable tablet over 
 **BEWARE**
 
 > :warning: **Remarkable Software Version 3 is NOT SUPPORTED** :warning:<br/>
-> Remy has only been tested on versions of the remarkable software <=2.
-> In particular Remy does **not** support v3 and the new v6 file format (yet).
+> Remedy has only been tested on versions of the remarkable software <=2.
+> In particular Remedy does **not** support v3 and the new v6 file format (yet).
 > See #49 for updates
 
 This is a work-in-progress with incomplete features.
@@ -17,7 +19,7 @@ It has not been thoroughly tested.
 These instructions are preliminary and will be expanded with time.
 Feel free to populate the wiki!
 
-I did my best to make sure usage of Remy will not incur in data loss.
+I did my best to make sure usage of Remedy will not incur in data loss.
 Most of the features exclusively read from the tablet and are completely safe, even if they may fail on the computer side.
 The only features that alters data on the tablet is the upload feature.
 It is however very unlikely to cause any problem since it only adds files.
@@ -31,29 +33,29 @@ For a basic backup of the tablet's data:
 ## Installation
 
 Pre-built bundles are in the roadmap but not available yet.
-The easiest way to install Remy is via `pip` (from the root of this repo):
+The easiest way to install Remedy is via `pip` (from the root of this repo):
 
     pip install --user ".[default]"
 
 There are few variants which might be suitable for different environments:
 
-    # To install Remy without PDF preview support:
+    # To install Remedy without PDF preview support:
     pip install --user .
-    # To install Remy with PDF preview support via `PyMuPDF` (equivalent to default):
+    # To install Remedy with PDF preview support via `PyMuPDF` (equivalent to default):
     pip install --user ".[mupdf]"
-    # To install Remy with PDF preview support via `python-poppler-qt5`:
+    # To install Remedy with PDF preview support via `python-poppler-qt5`:
     pip install --user ".[poppler]"
-    # To install Remy with support for lines simplification:
+    # To install Remedy with support for lines simplification:
     pip install --user ".[simpl]"
 
 Combinations are also possible, for example `pip install --user ".[mupdf,simpl]"`.
 
-After installation the tool can be launched by running `remy` from a console (or `python -m remy.gui`).
+After installation the tool can be launched by running `remedy` from a console (or `python -m remedy.gui`).
 
 
 ### Manual installation
 
-Remy's installation has been tested on MacOs Monterey, `python` version 3.8.
+Remedy's installation has been tested on MacOs Monterey, `python` version 3.8.
 
 The mandatory dependencies are:
 
@@ -72,20 +74,20 @@ Optional:
 
 - simplification (this requires python < 3.9)
 
-The entry point is `remy.gui`:
+The entry point is `remedy.gui`:
 
-    python -m remy.gui
+    python -m remedy.gui
 
 ## Usage
 
 The main intended usage is as a GUI for connecting to the tablet.
 The app however also supports reading from a local backup.
-The main entry point for the app is `remy.gui`.
+The main entry point for the app is `remedy.gui`.
 
 ## Configuration
 
-Starting it the fist time with `python -m remy.gui` will show an error message with the path where the app is expecting to find a configuration file (on macOS it would be something like `/Users/<user>/Library/Preferences/remy.json`).
-The message box will offer to open the file and populate it with some basic defaults. These should be enough to test basic functionality but much more can be obtained by properly configuring Remy.
+Starting it the fist time with `python -m remedy.gui` will show an error message with the path where the app is expecting to find a configuration file (on macOS it would be something like `/Users/<user>/Library/Preferences/remedy.json`).
+The message box will offer to open the file and populate it with some basic defaults. These should be enough to test basic functionality but much more can be obtained by properly configuring Remedy.
 The configuration file is a JSON file with the following structure:
 
 ```json
@@ -112,7 +114,7 @@ The file `example_config.json` is an example configuration that you can adapt to
 ### Source types
 Each source defines a possible way to get the contents to display.
 The `default_source` settings indicates which source to load if none is specified in the command line.
-If `default_source` is `false` or not set, then Remy shows a dialog allowing you to pick a source among the available ones.
+If `default_source` is `false` or not set, then Remedy shows a dialog allowing you to pick a source among the available ones.
 There are three supported kinds of sources: `local`, `ssh` and `rsync`.
 
 #### Local source
@@ -142,7 +144,7 @@ Obviously, this source is read-only: you cannot upload PDFs to it.
   "username": "root",
   "timeout": 3,
   "persist_cache": true,
-  "use_banner": "remy-banner.png"
+  "use_banner": "remedy-banner.png"
 }
 ```
 
@@ -167,12 +169,12 @@ By setting `persist_cache` to `true` the cache is cleared every time.
 {
   "name": "reMarkable (RSync)",
   "type": "rsync",
-  "data_dir": "/path-to/remy",
+  "data_dir": "/path-to/remedy",
   "host": "10.11.99.1",
   "key": "~/.ssh/id_rsa_remarkable",
   "username": "root",
   "timeout": 3,
-  "use_banner": "remy-banner.png",
+  "use_banner": "remedy-banner.png",
   "cache_mode": "on_demand",
   "rsync_path": "/path/to/local/rsync",
   "rsync_options": [ "--rsync-path=/opt/bin/rsync" ]
@@ -181,7 +183,7 @@ By setting `persist_cache` to `true` the cache is cleared every time.
 
 This is an optimised version of the SSH source.
 While SSH works without extra dependencies, the rsync source requires `rsync` to be installed on the reMarkable.
-A mandatory setting is `data_dir` which should point to a directory which can be managed by Remy to keep a partial copy of the tablet's data.
+A mandatory setting is `data_dir` which should point to a directory which can be managed by Remedy to keep a partial copy of the tablet's data.
 Every time you connect, only the changes are downloaded.
 The data-heavy files (PDFs and .rm) are downloaded on demand.
 The optional settings `rsync_path` provides the path to the local rsync binary and `rsync_options` provides additional options, the example above configures the options to find the rsync binary on the remarkable installed using entware.
@@ -199,11 +201,11 @@ This way every time one connects to `B` a full backup is stored, and the same ba
 
 #### The `use_banner` option
 
-When this option is set, the main UI of the tabled will be temporarily disabled while Remy is open.
+When this option is set, the main UI of the tabled will be temporarily disabled while Remedy is open.
 This is intended as an helpful prompt and a way to avoid conflicts on data access.
-The feature works best if the setting is the filename (can be absolute, or relative to home) of a png file stored on the tablet (there's a nice `remy-banner.png` in the asset folders you can upload with `scp`) and [`remarkable-splash`](https://github.com/ddvk/remarkable-splash) is installed on the tablet.
+The feature works best if the setting is the filename (can be absolute, or relative to home) of a png file stored on the tablet (there's a nice `remedy-banner.png` in the asset folders you can upload with `scp`) and [`remarkable-splash`](https://github.com/ddvk/remarkable-splash) is installed on the tablet.
 
-If Remy crashes and the remarkable seems unresponsive it is only because Remy re-enables the main UI of the tabled on exit; to regain control of the tablet you have three options: try and run Remy again and close it cleanly; or run `ssh REMARKABLEHOST /bin/systemctl start xochitl`; or manually reboot the device. Don't worry nothing bad is happening to the tablet in this circumstance.
+If Remedy crashes and the remarkable seems unresponsive it is only because Remedy re-enables the main UI of the tabled on exit; to regain control of the tablet you have three options: try and run Remedy again and close it cleanly; or run `ssh REMARKABLEHOST /bin/systemctl start xochitl`; or manually reboot the device. Don't worry nothing bad is happening to the tablet in this circumstance.
 
 ### Palettes section
 
@@ -330,7 +332,7 @@ since the PDF exporter of Qt5 does not support blend modes.
 
 ### Upload options
 
-The upload section determines the defaults used for documents uploaded via Remy.
+The upload section determines the defaults used for documents uploaded via Remedy.
 This section can contain three sub-sections, all optional:
 
 ```json
@@ -406,9 +408,9 @@ Only one page at a time can be exported (via context menu in preview) and the da
 
 ## Features
 
-Once the configuration file contains the necessary info, you can run Remy by running
+Once the configuration file contains the necessary info, you can run Remedy by running
 
-    remy [SOURCE]
+    remedy [SOURCE]
 
 The option is the id of one of the sources defined in the configuration file.
 With no option, the default source will be selected.

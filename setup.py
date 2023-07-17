@@ -12,7 +12,7 @@ def genResources():
 
     saved_argv = sys.argv
     # Use current environment to find pyrcc but use the public interface
-    sys.argv = ["pyrcc5", "-o", "remy/gui/resources.py", "resources.qrc"]
+    sys.argv = ["pyrcc5", "-o", "remedy/gui/resources.py", "resources.qrc"]
     pyrcc_main()
     sys.argv = saved_argv
 
@@ -37,12 +37,12 @@ class genResourcesEggInfo(egg_info):
 
 
 setup(
-    name="Remy",
+    name="Remedy",
     version="0.5",
-    url="https://github.com/bordaigorl/remy",
-    description="Remy, a reMarkable tablet manager app",
-    author="Emanuele D'Osualdo",
-    author_email="emanuele.dosualdo@gmail.com",
+    url="https://github.com/michaelmera/remedy",
+    description="Remedy, a reMarkable tablet manager app",
+    author="Michael Mera",
+    author_email="dev@michaelmera.com",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -63,7 +63,7 @@ setup(
         "mupdf": ["pymupdf"],
         "poppler": ["python-poppler-qt5"],
     },
-    entry_points={"console_scripts": ["remy = remy.gui.app:main"]},
+    entry_points={"console_scripts": ["remedy = remedy.gui.app:main"]},
     license="GPLv3",
     cmdclass={
         "install": genResourcesInstall,

@@ -2,7 +2,7 @@
 
 # PyQt5 resources
 
-remy/gui/resources.py
+remedy/gui/resources.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

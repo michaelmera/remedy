@@ -8,30 +8,30 @@
       "key": "~/.ssh/id_rsa",
       "username": "root",
       "timeout": 3,
-      "use_banner": "remy-banner.png"
+      "use_banner": "remedy-banner.png"
     },
     "wifi": {
       "name": "reMarkable (RSync)",
       "type": "rsync",
-      "data_dir": "/Users/bordaigorl/remy",
+      "data_dir": "/Users/michaelmera/remedy",
       "host": "remarkable",
       "key": "~/.ssh/id_rsa",
       "username": "root",
       "timeout": 3,
-      "use_banner": "remy-banner.png"
+      "use_banner": "remedy-banner.png"
     },
     "backup": {
       "name": "Latest Backup",
       "type": "local",
-      "documents": "/Users/bordaigorl/rmbackup/latest",
-      "templates": "/Users/bordaigorl/rmbackup/templates"
+      "documents": "/Users/michaelmera/rmbackup/latest",
+      "templates": "/Users/michaelmera/rmbackup/templates"
     }
   },
   "preview": {
     "eraser_mode": "accurate"
   },
   "export": {
-    "default_dir": "/Users/bordaigorl/Documents",
+    "default_dir": "/Users/michaelmera/Documents",
     "open_exported": true
   }
 }
