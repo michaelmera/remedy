@@ -192,11 +192,6 @@ class Entry:
         if field in self._content:
             return self._content[field]
         return None
-        # raise AttributeError(field)
-
-    # def __setattr__(self, field, val):
-    #   print(field,val)
-    #   object.__setattr__(self, field, val)
 
     def __dir__(self):
         return (
@@ -598,17 +593,15 @@ class RemarkableIndex:
         index = {ROOT_ID: RootFolder(self)}
         tags = {}
 
-        # progress(0, len(uids))
-
         for j, uid in enumerate(uids):
-            # print('%d%%' % (j * 100 // len(uids)), end='\r',flush=True)
             progress(j, len(uids) * 2)
-            try:
-                metadata = self._readJson(uid, ext="metadata")
-                content = self._readJson(uid, ext="content")
-            except Exception as e:
-                log.warning("Could not load metadata of %s: skipping [%s]", uid, e)
+            metadata = self._readJson(uid, ext="metadata")
+            content = self._readJson(uid, ext="content")
+
+            if not metadata:
+                log.warning("Could not load json file %s.metadata", uid)
                 continue
+
             for t in content.get("tags", []):
                 if t["name"] not in tags:
                     tags[t["name"]] = {
@@ -616,6 +609,7 @@ class RemarkableIndex:
                         "pages": [],
                     }
                 tags[t["name"]]["docs"].append(uid)
+
             for t in content.get("pageTags", []):
                 if t["name"] not in tags:
                     tags[t["name"]] = {
@@ -623,6 +617,7 @@ class RemarkableIndex:
                         "pages": [],
                     }
                 tags[t["name"]]["pages"].append({"doc": uid, "page": t["pageId"]})
+
             if metadata["type"] == FOLDER_TYPE:
                 index[uid] = Folder(self, uid, metadata, content)
             elif metadata["type"] == DOCUMENT_TYPE:
@@ -634,12 +629,11 @@ class RemarkableIndex:
                     index[uid] = EBook(self, uid, metadata, content)
                 else:
                     raise RemarkableDocumentError(
-                        "Unknown file type '{fileType}'".format(content)
+                        f"Unknown file type '{content['fileType']}'"
                     )
             else:
-                raise RemarkableDocumentError(
-                    "Unknown file type '{type}'".format(metadata)
-                )
+                raise RemarkableDocumentError(f"Unknown file type '{metadata['type']}'")
+
         trash = TrashBin(self)
         for k, prop in index.items():
             progress(len(uids) + j, len(uids) * 2)
@@ -663,9 +657,12 @@ class RemarkableIndex:
         self.tags = tags
 
     def _readJson(self, *remote, ext=None):
-        fname = self.fsource.retrieve(*remote, ext=ext)
-        with open(fname) as f:
-            return json.load(f)
+        try:
+            fname = self.fsource.retrieve(*remote, ext=ext)
+            with open(fname) as f:
+                return json.load(f)
+        except Exception as e:
+            return dict()
 
     def _new_entry_prepare(self, uid, etype, meta, path=None):
         pass  # for subclasses to specialise
@@ -824,18 +821,6 @@ class RemarkableIndex:
             if k.startswith(pid):
                 return k
         return None
-
-    # def pathOf(self, uid, exact=True, trash_too=False):
-    #   if not exact:
-    #     uid = self.match_id(uid)
-    #   p = []
-    #   while uid:
-    #     if uid in self.index and (trash_too or not self.isDeleted(uid)):
-    #         p.append(self.index[uid].visibleName)
-    #         uid = self.index[uid].parent
-    #     else:
-    #       return None
-    #   return reversed(p[1:])
 
     def findByName(self, name, exact=False):
         if exact:

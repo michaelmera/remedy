@@ -66,13 +66,6 @@ class FileSource:
     def close(self):
         return
 
-    # def __del__(self):
-    #   try:
-    #     self.cleanup()
-    #     self.close()
-    #   except Exception as e:
-    #     log.error(e)
-
     def listItems(self):
         raise NotImplementedError
 
@@ -80,7 +73,6 @@ class FileSource:
         raise NotImplementedError
 
     def _selectTemplate(self, name, preferVector=False):
-        # try:
         if "png" in self.templates[name]:
             if "svg" in self.templates[name]:
                 if preferVector:
@@ -88,9 +80,6 @@ class FileSource:
             return self.templates[name]["png"]
         else:
             return self.templates[name]["svg"]
-
-    # except:
-    # return None
 
 
 class LocalFileSource(FileSource):
