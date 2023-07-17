@@ -1,6 +1,23 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtGui import QContextMenuEvent, QIcon, QKeySequence
+from PyQt5.QtWidgets import (
+    QWidget,
+    QTreeView,
+    QHeaderView,
+    QMenu,
+    QHBoxLayout,
+    QLineEdit,
+)
+from PyQt5.QtCore import (
+    pyqtSlot,
+    pyqtSignal,
+    Qt,
+    QAbstractTableModel,
+    QAbstractListModel,
+    QSortFilterProxyModel,
+    QModelIndex,
+    QSize,
+    QPoint,
+)
 
 from remedy.utils import log
 

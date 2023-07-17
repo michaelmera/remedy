@@ -1,6 +1,15 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import (
+    QTreeWidgetItem,
+    QAction,
+    QMainWindow,
+    QActionGroup,
+    QSplitter,
+    QStackedWidget,
+    QSizePolicy,
+    QInputDialog,
+)
+from PyQt5.QtCore import pyqtSlot
+
 
 from remedy.gui.qmetadata import *
 from remedy.gui.thumbnail import ThumbnailWorker

@@ -1,9 +1,8 @@
 from remedy import *
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtPrintSupport import *
+from PyQt5.QtCore import pyqtSlot, QObject, pyqtSignal, QUrl
+from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtWidgets import QProgressDialog, QMessageBox, QApplication, QFileDialog
 
 from remedy.remarkable.export import Exporter, CancelledExporter
 from remedy.gui.export.options import ExportDialog

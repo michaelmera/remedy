@@ -1,9 +1,39 @@
 from remedy import *
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtPrintSupport import *
+from PyQt5.QtCore import (
+    QRunnable,
+    pyqtSignal,
+    QObject,
+    pyqtSlot,
+    Qt,
+    QThreadPool,
+    QEvent,
+    QSize,
+)
+from PyQt5.QtGui import (
+    QImage,
+    QIcon,
+    QPainter,
+    QColor,
+    QPixmap,
+    QKeySequence,
+    QMovie,
+    QFont,
+)
+from PyQt5.QtWidgets import (
+    QGraphicsRectItem,
+    QGraphicsView,
+    QAction,
+    QApplication,
+    QMenu,
+    QGraphicsScene,
+    QGraphicsItem,
+    QGraphicsPixmapItem,
+    QAbstractScrollArea,
+    QLabel,
+    QGraphicsProxyWidget,
+    QGraphicsSimpleTextItem,
+)
 
 import remedy.remarkable.constants as rm
 

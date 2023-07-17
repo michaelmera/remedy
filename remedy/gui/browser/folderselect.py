@@ -1,6 +1,13 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtWidgets import (
+    QDialog,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QDialogButtonBox,
+    QVBoxLayout,
+    QLabel,
+)
+from PyQt5.QtGui import QIcon, QPixmap
 
 
 class FolderSelectDialog(QDialog):

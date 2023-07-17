@@ -1,9 +1,23 @@
 # from remedy import *
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtPrintSupport import *
+from PyQt5.QtWidgets import (
+    QGraphicsRectItem,
+    QGraphicsPathItem,
+    QGraphicsItem,
+    QGraphicsScene,
+    QGraphicsPixmapItem,
+)
+from PyQt5.QtGui import (
+    QImage,
+    QPainter,
+    QBrush,
+    QTransform,
+    QPen,
+    QPainterPathStroker,
+    QPainterPath,
+    QPixmap,
+)
+from PyQt5.QtCore import Qt, QPointF
 
 import remedy.remarkable.constants as rm
 from remedy.remarkable.palette import *

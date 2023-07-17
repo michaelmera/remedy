@@ -1,9 +1,8 @@
 from remedy import *
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtPrintSupport import *
+from PyQt5.QtCore import pyqtSignal, QThread, QSizeF
+from PyQt5.QtGui import QPainter
+from PyQt5.QtPrintSupport import QPrinter
 
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from PyPDF2.generic import NullObject

@@ -1,6 +1,13 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QTextEdit,
+    QDesktopWidget,
+    QProgressDialog,
+    QMessageBox,
+    QFileDialog,
+)
+from PyQt5.QtGui import QIcon, QDesktopServices
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread, QSize, Qt, QUrl
 
 from remedy.utils import log
 

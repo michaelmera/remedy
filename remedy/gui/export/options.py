@@ -1,9 +1,19 @@
 from remedy import *
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtPrintSupport import *
+from PyQt5.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
+    QLineEdit,
+    QCheckBox,
+    QComboBox,
+    QDoubleSpinBox,
+    QHBoxLayout,
+    QVBoxLayout,
+    QFileDialog,
+)
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import pyqtSlot, Qt
 
 from remedy.remarkable.palette import Palette
 from remedy.remarkable.export import (

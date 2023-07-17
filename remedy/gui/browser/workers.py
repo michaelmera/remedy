@@ -1,5 +1,5 @@
 import traceback
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QRunnable, QThreadPool
 
 from remedy.utils import log
 

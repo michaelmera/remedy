@@ -1,6 +1,6 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPlainTextEdit, QMessageBox
+from PyQt5.QtGui import QMovie
+from PyQt5.QtCore import pyqtSignal, QRunnable, QObject, QSize, QThreadPool
 
 from remedy.hwr.mathpix import mathpixRaster, MathPixError
 

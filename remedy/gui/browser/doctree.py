@@ -1,6 +1,17 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtGui import QContextMenuEvent, QIcon
+from PyQt5.QtWidgets import (
+    QTreeWidgetItem,
+    QTreeWidget,
+    QWidget,
+    QHBoxLayout,
+    QLabel,
+    QProgressBar,
+    QPushButton,
+    QMessageBox,
+    QHeaderView,
+    QTreeView,
+)
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QTimer
 
 from remedy.gui.qmetadata import *
 

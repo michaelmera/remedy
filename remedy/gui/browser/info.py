@@ -1,6 +1,18 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtCore import pyqtSlot, Qt, QThreadPool
+from PyQt5.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QHBoxLayout,
+    QTableWidget,
+    QFrame,
+    QTableWidgetItem,
+    QHeaderView,
+    QListWidget,
+    QSizePolicy,
+    QListWidgetItem,
+)
+from PyQt5.QtGui import QImage, QFont, QPalette, QPixmap, QIcon
 
 from remedy.gui.qmetadata import *
 from remedy.gui.thumbnail import ThumbnailWorker

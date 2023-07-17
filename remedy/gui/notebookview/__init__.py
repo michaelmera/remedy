@@ -1,10 +1,9 @@
 # from remedy import *
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QMainWindow, QAction, QToolBar, QLineEdit, QApplication
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, QSize
 
-# from PyQt5.QtPrintSupport import *
 
 from remedy.remarkable.constants import *
 from remedy.gui.hwr import HWRResults

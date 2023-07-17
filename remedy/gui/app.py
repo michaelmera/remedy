@@ -4,9 +4,15 @@ import shutil
 import json
 import signal
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QProgressDialog, QApplication
+from PyQt5.QtCore import (
+    QRunnable,
+    pyqtSlot,
+    pyqtSignal,
+    QObject,
+    QStandardPaths,
+    QCoreApplication,
+)
 
 from remedy.remarkable.config import *
 from remedy.gui.qmetadata import *
