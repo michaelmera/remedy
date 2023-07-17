@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+from __future__ import annotations
+
 import json
 from itertools import *
 from collections import namedtuple
@@ -71,6 +72,21 @@ BOTH = 3
 
 
 class Entry:
+    @staticmethod
+    def from_dict(index, uid, metadata, content) -> Entry | None:
+        if metadata["type"] == FOLDER_TYPE:
+            return Folder(index, uid, metadata, content)
+
+        elif metadata["type"] == DOCUMENT_TYPE:
+            if content["fileType"] in ["", "notebook"]:
+                return Notebook(index, uid, metadata, content)
+            elif content["fileType"] == "pdf":
+                return PDFDoc(index, uid, metadata, content)
+            elif content["fileType"] == "epub":
+                return EBook(index, uid, metadata, content)
+
+        return None
+
     def __init__(self, index, uid, metadata={}, content={}):
         self.index = index
         self.uid = uid
@@ -618,21 +634,9 @@ class RemarkableIndex:
                     }
                 tags[t["name"]]["pages"].append({"doc": uid, "page": t["pageId"]})
 
-            if metadata["type"] == FOLDER_TYPE:
-                index[uid] = Folder(self, uid, metadata, content)
-            elif metadata["type"] == DOCUMENT_TYPE:
-                if content["fileType"] in ["", "notebook"]:
-                    index[uid] = Notebook(self, uid, metadata, content)
-                elif content["fileType"] == "pdf":
-                    index[uid] = PDFDoc(self, uid, metadata, content)
-                elif content["fileType"] == "epub":
-                    index[uid] = EBook(self, uid, metadata, content)
-                else:
-                    raise RemarkableDocumentError(
-                        f"Unknown file type '{content['fileType']}'"
-                    )
-            else:
-                raise RemarkableDocumentError(f"Unknown file type '{metadata['type']}'")
+            index[uid] = Entry.from_dict(self, uid, metadata, content)
+            if index[uid] is None:
+                raise RemarkableDocumentError(f"Unknown document type with uid '{uid}'")
 
         trash = TrashBin(self)
         for k, prop in index.items():
