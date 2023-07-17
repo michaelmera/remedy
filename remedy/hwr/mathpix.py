@@ -94,7 +94,7 @@ def mathpixStrokes(
     y = []
     for l in page.layers:
         for k in l.strokes:
-            if TOOL_ID.get(k.pen) not in tools:
+            if TOOL_ID.get(k.pen) not in exclude_tools:
                 if simplify:
                     s = simpl(k)
                     x.append([p[0] for p in s])

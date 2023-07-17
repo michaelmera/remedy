@@ -55,12 +55,12 @@ class HWRResults(QWidget):
 
     def onError(self, exc):
         if isinstance(exc, MathPixError):
-            log.error("Mathpix: %s", e.result)
+            log.error("Mathpix: %s", exc.result)
             QMessageBox.critical(
                 self,
                 "MathPix Error",
                 "The request to MathPix was unsuccessful:\n\n%s"
-                % e.result.get("error"),
+                % exc.result.get("error"),
             )
         else:
             log.error("Mathpix: %s", exc)
