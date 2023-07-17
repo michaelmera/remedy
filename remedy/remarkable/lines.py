@@ -13,7 +13,7 @@ Stroke = namedtuple("Stroke", ["pen", "color", "unk1", "width", "unk2", "segment
 Segment = namedtuple("Segment", ["x", "y", "speed", "direction", "width", "pressure"])
 
 HEADER_START = b"reMarkable .lines file, version="
-S_HEADER_PAGE = struct.Struct("<{}ss10s".format(len(HEADER_START)))
+S_HEADER_PAGE = struct.Struct(f"<{len(HEADER_START)}ss10s")
 S_PAGE = struct.Struct("<BBH")  # TODO: might be 'I'
 S_LAYER = struct.Struct("<I")
 S_STROKE_V3 = struct.Struct("<IIIfI")

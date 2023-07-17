@@ -169,10 +169,10 @@ class Entry:
         return c
 
     def allDocTags(self):
-        return set(t["name"] for t in self.tags or [])
+        return {t["name"] for t in self.tags or []}
 
     def allPageTags(self):
-        return set(t["name"] for t in self.pageTags or [])
+        return {t["name"] for t in self.pageTags or []}
 
     def allTags(self):
         return self.allDocTags() | self.allPageTags()
@@ -295,7 +295,7 @@ class Document(Entry):
         else:
             try:
                 mfile = self.fsource.retrieve(self.uid, pid + "-metadata", ext="json")
-                with open(mfile, "r") as f:
+                with open(mfile) as f:
                     layerNames = json.load(f)
                 layerNames = layerNames["layers"]
             except Exception:
@@ -307,7 +307,7 @@ class Document(Entry):
                     hfile = self.fsource.retrieve(
                         self.uid + ".highlights", pid, ext="json"
                     )
-                    with open(hfile, "r") as f:
+                    with open(hfile) as f:
                         h = json.load(f).get("highlights", [])
                     for i in range(len(h)):
                         highlights[i] = h[i]
@@ -360,7 +360,7 @@ class Document(Entry):
             if self.fsource.exists(self.uid + ".highlights", pid, ext="json"):
                 hfile = self.fsource.retrieve(self.uid + ".highlights", pid, ext="json")
                 try:
-                    with open(hfile, "r") as f:
+                    with open(hfile) as f:
                         h = json.load(f)
                 except Exception:
                     pass
@@ -425,7 +425,7 @@ class Notebook(Document):
             pfile = self.fsource.retrieve(self.uid, ext="pagedata")
             with open(pfile) as f:
                 self._bg = [t.rstrip("\n") for t in f.readlines()]
-        except IOError:
+        except OSError:
             pass
 
     def _makePage(self, layers, version, pageNum):
@@ -655,7 +655,7 @@ class RemarkableIndex:
                         index[parent].files.append(k)
             except KeyError as e:
                 raise RemarkableDocumentError(
-                    "Could not find field {0} in document {1}".format(e, k)
+                    f"Could not find field {e} in document {k}"
                 )
 
         self.index = index

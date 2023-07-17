@@ -35,7 +35,7 @@ class ExportDialog(QDialog):
             return (None, "", options, False)
 
     def __init__(self, filename=None, options={}, mode=None, **kwargs):
-        super(ExportDialog, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.mode = ExportDialog.FileExport if mode is None else mode
         self.options = options
         self.filename = filename

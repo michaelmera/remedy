@@ -96,7 +96,7 @@ class PaletteBar(QWidget):
     changed = pyqtSignal(str, QColor)
 
     def __init__(self, palette, *args, editable=True, **kwargs):
-        super(PaletteBar, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         colorsel = QHBoxLayout(self)
         self._btn = {}
         colorsel.setSpacing(0)
@@ -128,7 +128,7 @@ class PaletteSelector(QWidget):
     def __init__(
         self, *args, palettes=None, palette="default", editable=True, **kwargs
     ):
-        super(PaletteSelector, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if palettes is None:
             palettes = QApplication.instance().config.palettes
         if not isinstance(palette, Palette):

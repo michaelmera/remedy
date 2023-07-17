@@ -490,7 +490,7 @@ class FileBrowser(QMainWindow):
 
     @pyqtSlot()
     def moveCurrentTo(self):
-        uids = set(item.entry().uid for item in self.tree.selectedItems())
+        uids = {item.entry().uid for item in self.tree.selectedItems()}
         dest = FolderSelectDialog.getDestinationFolder(
             self.index, parent=self, exclude=uids
         )

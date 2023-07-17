@@ -264,7 +264,7 @@ class DocTree(QTreeWidget):
     uploadRequest = pyqtSignal(str, list)
 
     def __init__(self, index, *a, uid=None, show_trash=True, **kw):
-        super(DocTree, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.setMinimumWidth(400)
         self.setIconSize(QSize(24, 24))
         # self.setColumnCount(4)

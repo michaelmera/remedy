@@ -104,7 +104,7 @@ class LocalFileSource(FileSource):
             self.templatesRoot = templatesRoot = path.expanduser(templatesRoot)
             self.templates = {}
             with open(
-                path.join(templatesRoot, "templates.json"), "r", encoding="utf-8"
+                path.join(templatesRoot, "templates.json"), encoding="utf-8"
             ) as f:
                 idx = json.load(f)
             for t in idx["templates"]:
@@ -242,7 +242,7 @@ class LiveFileSourceSSH(FileSource):
                 self._local("templates.json", branch=TEMPLDIR),
             )
             with open(
-                self._local("templates.json", branch=TEMPLDIR), "r", encoding="utf-8"
+                self._local("templates.json", branch=TEMPLDIR), encoding="utf-8"
             ) as f:
                 idx = json.load(f)
 
@@ -504,7 +504,7 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
         )
 
         with open(
-            self._local("templates.json", branch=TEMPLDIR), "r", encoding="utf-8"
+            self._local("templates.json", branch=TEMPLDIR), encoding="utf-8"
         ) as f:
             idx = json.load(f)
 
@@ -518,7 +518,7 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
                 self.templates[name]["png"] = t["filename"] + ".png"
 
     def _remote_rsync(self, path):
-        return "%s@%s:%s" % (self.username, self.host, path)
+        return f"{self.username}@{self.host}:{path}"
 
     def _bulk_download(
         self, fr, to, excludes=["*"], includes=[], delete=True, progress=None

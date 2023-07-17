@@ -151,11 +151,11 @@ class RemedyConfig:
     def renderOptionsFrom(self, key):
         opt = deepcopy(self.get(key))
         opt["palette"] = self.palettes.get(opt.get("palette", "default"))
-        opt["exclude_tools"] = set(
+        opt["exclude_tools"] = {
             TOOL_NAME_ID.get(t)
             for t in opt.get("exclude_tools", [])
             if t in TOOL_NAME_ID
-        )
+        }
         return opt
 
     @property

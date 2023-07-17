@@ -14,7 +14,7 @@ class FolderSelectDialog(QDialog):
             return None
 
     def __init__(self, index, uid=None, exclude=set(), **kwargs):
-        super(FolderSelectDialog, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._icon = QIcon(QPixmap(":assets/24/folder.svg"))
         tree = self.tree = QTreeWidget()
         # tree.setMinimumWidth(400)

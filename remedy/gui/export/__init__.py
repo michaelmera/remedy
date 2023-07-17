@@ -49,7 +49,7 @@ class ExportOperation(QObject):
 
     @pyqtSlot(str)
     def onNewPhase(self, s):
-        self.dialog.setLabelText("Exporting %s:\n%s..." % (self.name, s))
+        self.dialog.setLabelText(f"Exporting {self.name}:\n{s}...")
 
     @pyqtSlot()
     def onProgress(self):

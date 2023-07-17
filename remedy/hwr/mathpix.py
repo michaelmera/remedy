@@ -24,9 +24,13 @@ except Exception:
 
 DEFAULT_TEXT_TOOLS = [BALLPOINT_TOOL, FINELINER_TOOL, MECH_PENCIL_TOOL]
 
-ARTISTIC_TOOLS = set(
-    [BRUSH_TOOL, PENCIL_TOOL, HIGHLIGHTER_TOOL, ERASER_TOOL, ERASE_AREA_TOOL]
-)
+ARTISTIC_TOOLS = {
+    BRUSH_TOOL,
+    PENCIL_TOOL,
+    HIGHLIGHTER_TOOL,
+    ERASER_TOOL,
+    ERASE_AREA_TOOL,
+}
 
 
 class MathPixError(Exception):
@@ -69,9 +73,13 @@ def mathpixRaster(page, app_id, app_key, scale=0.5, **opt):
     return result
 
 
-DEFAULT_EXCLUDE_TOOLS = set(
-    [BRUSH_TOOL, PENCIL_TOOL, HIGHLIGHTER_TOOL, ERASER_TOOL, ERASE_AREA_TOOL]
-)
+DEFAULT_EXCLUDE_TOOLS = {
+    BRUSH_TOOL,
+    PENCIL_TOOL,
+    HIGHLIGHTER_TOOL,
+    ERASER_TOOL,
+    ERASE_AREA_TOOL,
+}
 
 
 def mathpixStrokes(

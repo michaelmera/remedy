@@ -29,9 +29,7 @@ class TolerantPdfWriter(PdfFileWriter):
 
     def _sweepIndirectReferences(self, externMap, data):
         try:
-            return super(TolerantPdfWriter, self)._sweepIndirectReferences(
-                externMap, data
-            )
+            return super()._sweepIndirectReferences(externMap, data)
         except PdfReadError:
             return NullObject()
 
