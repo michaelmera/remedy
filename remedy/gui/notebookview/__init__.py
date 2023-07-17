@@ -56,7 +56,9 @@ class NotebookViewer(QMainWindow):
         self.pageNumEdit.setText("1")
         # self.pageNumEdit.setValidator(QIntValidator(0,100))
         self.pageNumEdit.setFixedWidth(50)
-        self.pageNumEdit.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.pageNumEdit.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
+        )
         self.pageNumEdit.editingFinished.connect(self._pageNumEdited)
         tb.addWidget(self.pageNumEdit)
         tb.addAction(a.nextPage)
@@ -121,7 +123,7 @@ class NotebookViewer(QMainWindow):
         pageNum = self.view.currentPageNum()
         opt = QApplication.instance().config.mathpix
         w = HWRResults(page, opt)
-        w.setParent(self, Qt.Window)
+        w.setParent(self, Qt.WindowType.WWindow)
         w.setWindowTitle(
             "Handwriting recongition for page %d of %s"
             % (pageNum, self.view.document().visibleName)

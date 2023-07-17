@@ -9,3 +9,14 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py310-plus]
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.317
+    hooks:
+      - id: pyright
+        exclude: '.*'
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.4.1
+    hooks:
+      - id: mypy
+        exclude: '.*'
+        args: [--non-interactive, --install-types, --ignore-missing-imports]

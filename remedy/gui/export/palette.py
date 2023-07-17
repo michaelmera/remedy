@@ -48,7 +48,7 @@ class ColorButton(QWidget):
     @pyqtSlot(bool)
     def selectColor(self, *args):
         color = QColorDialog.getColor(
-            self._color or Qt.black, self.window(), options=self.options
+            self._color or Qt.GlobalColor.black, self.window(), options=self.options
         )
         if color.isValid():
             self.setColor(color)
@@ -72,9 +72,9 @@ class ColorButton(QWidget):
     def setEditable(self, editable):
         self._editable = editable
         if editable:
-            self.setCursor(Qt.PointingHandCursor)
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
         else:
-            self.setCursor(Qt.ArrowCursor)
+            self.setCursor(Qt.CursorShape.ArrowCursor)
 
     def editable(self):
         return self._editable

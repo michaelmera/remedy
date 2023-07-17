@@ -42,7 +42,7 @@ class MathPixError(Exception):
 def mathpixRaster(page, app_id, app_key, scale=0.5, **opt):
     s = BarePageScene(page, **opt)
     img = QImage(scale * WIDTH, scale * HEIGHT, QImage.Format_RGB32)
-    img.fill(Qt.white)
+    img.fill(Qt.GlobalColor.white)
     painter = QPainter(img)
     painter.setRenderHint(QPainter.Antialiasing)
     s.render(painter)

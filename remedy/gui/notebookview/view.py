@@ -96,7 +96,7 @@ class NotebookView(QGraphicsView):
         # self.setRenderHint(QPainter.SmoothPixmapTransform)
         # setting this^ per-pixmap now, so pencil textures are not smoothened
 
-        self.viewport().grabGesture(Qt.PinchGesture)
+        self.viewport().grabGesture(Qt.GestureType.PinchGesture)
 
         self._document = document
         self.options = QApplication.instance().config.preview
@@ -107,10 +107,10 @@ class NotebookView(QGraphicsView):
         # self.setScene(self.scene)
 
         self.setBackgroundBrush(QColor(230, 230, 230))
-        self.aspectRatioMode = Qt.KeepAspectRatio
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setAlignment(Qt.AlignCenter)
+        self.aspectRatioMode = Qt.AspectRatioMode.KeepAspectRatio
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.menu = QMenu(self)
         a = self.actions
@@ -188,7 +188,7 @@ class NotebookView(QGraphicsView):
         scene = self._page_cache[i] = QGraphicsScene()
         r = scene.pageRect = scene.addRect(0, 0, rm.WIDTH, rm.HEIGHT)
         r.setFlag(QGraphicsItem.ItemClipsChildrenToShape)
-        r.setBrush(Qt.white)
+        r.setBrush(Qt.GlobalColor.white)
 
         scene.loadingItem = QLoadingItem(r)
         # scene.loadingItem.setRotation(-scene.rotation())
@@ -211,7 +211,7 @@ class NotebookView(QGraphicsView):
                 scene.baseItem = QGraphicsPixmapItem(QPixmap(img), scene.pageRect)
         elif img:
             img = QGraphicsPixmapItem(QPixmap(img), scene.pageRect)
-            img.setTransformationMode(Qt.SmoothTransformation)
+            img.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
             img.setScale(1 / 2)
             scene.baseItem = img
         else:
@@ -220,7 +220,7 @@ class NotebookView(QGraphicsView):
         pitem.setParentItem(scene.pageRect)
         scene.setSceneRect(scene.pageRect.rect())
         r = scene.addRect(0, 0, rm.WIDTH, rm.HEIGHT)
-        r.setPen(Qt.black)
+        r.setPen(Qt.GlobalColor.black)
 
     # def resetSize.emit(self, ratio):
     #   dg = QApplication.desktop().availableGeometry(self.window())
@@ -306,7 +306,7 @@ class NotebookView(QGraphicsView):
 
     def viewportEvent(self, event):
         if event.type() == QEvent.Gesture:
-            pinch = event.gesture(Qt.PinchGesture)
+            pinch = event.gesture(Qt.GestureType.PinchGesture)
             if pinch is not None:
                 self._fit = False
                 self.scale(pinch.scaleFactor(), pinch.scaleFactor())
@@ -315,18 +315,18 @@ class NotebookView(QGraphicsView):
 
     def mouseDoubleClickEvent(self, event):
         # scenePos = self.mapToScene(event.pos())
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._fit = True
             self.updateViewer()
             # self.leftMouseButtonDoubleClicked.emit(scenePos.x(), scenePos.y())
-        # elif event.button() == Qt.RightButton:
+        # elif event.button() == Qt.MouseButton.RightButton:
         # self.rightMouseButtonDoubleClicked.emit(scenePos.x(), scenePos.y())
         # super(NotebookViewer, self).mouseDoubleClickEvent(event)
 
     def wheelEvent(self, event):
-        if event.modifiers() == Qt.NoModifier:
+        if event.modifiers() == Qt.KeyboardModifier.NoModifier:
             QAbstractScrollArea.wheelEvent(self, event)
-        elif event.modifiers() != Qt.ShiftModifier:
+        elif event.modifiers() != Qt.KeyboardModifier.ShiftModifier:
             self._fit = False
 
             self.setTransformationAnchor(QGraphicsView.NoAnchor)
@@ -385,31 +385,34 @@ class NotebookView(QGraphicsView):
     def keyPressEvent(self, event):
         if event.matches(QKeySequence.Close):
             self.close()
-        elif event.key() == Qt.Key_Left:
-            if event.modifiers() & Qt.ControlModifier:
+        elif event.key() == Qt.Key.Key_Left:
+            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
                 self._loadPage(0)
-            elif event.modifiers() & Qt.MetaModifier:
+            elif event.modifiers() & Qt.KeyboardModifier.MetaModifier:
                 self.rotateCCW()
             else:
                 self.prevPage()
-        elif event.key() == Qt.Key_Right:
-            if event.modifiers() & Qt.ControlModifier:
+        elif event.key() == Qt.Key.Key_Right:
+            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
                 self._loadPage(self._maxPage)
-            elif event.modifiers() & Qt.MetaModifier:
+            elif event.modifiers() & Qt.KeyboardModifier.MetaModifier:
                 self.rotateCW()
             else:
                 self.nextPage()
-        elif event.key() == Qt.Key_F:
+        elif event.key() == Qt.Key.Key_F:
             self.setFit(True)
-        elif event.key() == Qt.Key_1:
+        elif event.key() == Qt.Key.Key_1:
             self.actualSize()
-        elif event.key() == Qt.Key_Plus:
+        elif event.key() == Qt.Key.Key_Plus:
             self.zoomIn()
-        elif event.key() == Qt.Key_Minus:
+        elif event.key() == Qt.Key.Key_Minus:
             self.zoomOut()
-        elif event.key() == Qt.Key_E:
+        elif event.key() == Qt.Key.Key_E:
             self.export()
-        elif event.key() == Qt.Key_S and event.modifiers() & Qt.MetaModifier:
+        elif (
+            event.key() == Qt.Key.Key_S
+            and event.modifiers() & Qt.KeyboardModifier.MetaModifier
+        ):
             self._smoothen = not self._smoothen
             i = self._page
             self._tolerance.setdefault(i, 0)
@@ -417,10 +420,10 @@ class NotebookView(QGraphicsView):
                 i, replace=True, simplify=self._tolerance[i], smoothen=self._smoothen
             )
             self.setScene(self._page_cache[i])
-        elif event.key() == Qt.Key_S:
+        elif event.key() == Qt.Key.Key_S:
             i = self._page
             self._tolerance.setdefault(i, 0.5)
-            if event.modifiers() & Qt.ShiftModifier:
+            if event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
                 if self._tolerance[i] > 0:
                     self._tolerance[i] -= 0.25
             else:
@@ -482,7 +485,7 @@ class QLoadingItem(QGraphicsRectItem):
         font.setPointSize(14)
         lbl = QGraphicsSimpleTextItem("Loading", self)
         lbl.setFont(font)
-        lbl.setBrush(Qt.gray)
+        lbl.setBrush(Qt.GlobalColor.gray)
         lblr = lbl.boundingRect()
         lbl.setPos(-lblr.width() / 2, 30)
         # lbl.setPos(-lblr.width()/2,-lblr.height()/2)

@@ -51,7 +51,7 @@ class ExportDialog(QDialog):
         self.filename = filename
 
         self.setWindowTitle("Export")
-        self.setWindowModality(Qt.WindowModal)
+        self.setWindowModality(Qt.WindowModality.WindowModal)
 
         buttonBox = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Reset

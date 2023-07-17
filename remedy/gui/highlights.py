@@ -137,7 +137,7 @@ class HighlightsViewer(QMainWindow):
         tb.setIconSize(QSize(16, 16))
         tb.setFloatable(False)
         tb.setMovable(False)
-        tb.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        tb.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         b1 = tb.addAction(QIcon(":/assets/16/export.svg"), "Export")
         b1.triggered.connect(self.export)
         tb.addSeparator()

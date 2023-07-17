@@ -50,7 +50,7 @@ from remedy.remarkable.metadata import RemarkableError
 
 
 class FlatRemarkableIndexModel(QAbstractTableModel):
-    _fadedColor = Qt.black
+    _fadedColor = Qt.GlobalColor.black
 
     def __init__(self, index):
         QAbstractListModel.__init__(self)
@@ -67,14 +67,14 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
         }
         self._filterName = QSortFilterProxyModel()
         self._filterType = QSortFilterProxyModel()
-        self._filterType.setFilterRole(Qt.UserRole + 1)
+        self._filterType.setFilterRole(Qt.ItemDataRole.UserRole + 1)
         self._filterType.setFilterCaseSensitivity(False)
         self._filterTrash = QSortFilterProxyModel()
-        self._filterTrash.setFilterRole(Qt.UserRole + 2)
+        self._filterTrash.setFilterRole(Qt.ItemDataRole.UserRole + 2)
         self._filterPinned = QSortFilterProxyModel()
-        self._filterPinned.setFilterRole(Qt.UserRole + 3)
+        self._filterPinned.setFilterRole(Qt.ItemDataRole.UserRole + 3)
         self._topProxy = self._filterPinned
-        self._topProxy.setSortRole(Qt.UserRole + 10)
+        self._topProxy.setSortRole(Qt.ItemDataRole.UserRole + 10)
         self.refresh()
         # self._starred = QIcon(":assets/symbolic/starred.svg")
 
@@ -108,42 +108,42 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
         uid = self._uids[index.row()]
         entry = self._index.get(uid)
 
-        if role == Qt.UserRole + 10:
+        if role == Qt.ItemDataRole.UserRole + 10:
             if index.column() != 2:
-                role = Qt.DisplayRole
+                role = Qt.ItemDataRole.DisplayRole
             else:
                 return -int(entry.lastModified or 0)
 
-        if role == Qt.ToolTipRole:
+        if role == Qt.ItemDataRole.ToolTipRole:
             return self._index.fullPathOf(uid)
-        elif role == Qt.ForegroundRole:
+        elif role == Qt.ItemDataRole.ForegroundRole:
             if entry.isIndirectlyDeleted():
                 return self._fadedColor
-        elif role == Qt.UserRole:
+        elif role == Qt.ItemDataRole.UserRole:
             return uid
-        elif role == Qt.UserRole + 1:
+        elif role == Qt.ItemDataRole.UserRole + 1:
             return entry.typeName()
-        elif role == Qt.UserRole + 2:
+        elif role == Qt.ItemDataRole.UserRole + 2:
             return "1" if entry.isIndirectlyDeleted() else "0"
-        elif role == Qt.UserRole + 3:
+        elif role == Qt.ItemDataRole.UserRole + 3:
             return "1" if entry.pinned else "0"
 
         if index.column() == 0:  # name
-            if role == Qt.DisplayRole:
+            if role == Qt.ItemDataRole.DisplayRole:
                 return entry.name()
-            elif role == Qt.DecorationRole:
+            elif role == Qt.ItemDataRole.DecorationRole:
                 return self._icon.get(entry.typeName())
         elif index.column() == 1:  # pinned
-            if role == Qt.DisplayRole:
+            if role == Qt.ItemDataRole.DisplayRole:
                 return "1" if entry.pinned else "0"
         elif index.column() == 2:  # updated
-            if role == Qt.DisplayRole:
+            if role == Qt.ItemDataRole.DisplayRole:
                 return entry.updatedOn()
         elif index.column() == 3:  # type
-            if role == Qt.DisplayRole:
+            if role == Qt.ItemDataRole.DisplayRole:
                 return entry.typeName().title()
 
-        if index.column() > 0 and role == Qt.ForegroundRole:
+        if index.column() > 0 and role == Qt.ItemDataRole.ForegroundRole:
             return self._fadedColor
 
         return None
@@ -153,7 +153,7 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
         self._fadedColor = color
 
     def headerData(self, section, orientation, role):
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             if section == 0:
                 return "Name"
             elif section == 1:
@@ -195,12 +195,12 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
             self.createIndex(i, 0),
             self.createIndex(i, 3),
             [
-                Qt.ToolTipRole,
-                Qt.ForegroundRole,
-                Qt.UserRole + 1,
-                Qt.UserRole + 2,
-                Qt.UserRole + 3,
-                Qt.DisplayRole,
+                Qt.ItemDataRole.ToolTipRole,
+                Qt.ItemDataRole.ForegroundRole,
+                Qt.ItemDataRole.UserRole + 1,
+                Qt.ItemDataRole.UserRole + 2,
+                Qt.ItemDataRole.UserRole + 3,
+                Qt.ItemDataRole.DisplayRole,
             ],
         )
 
@@ -290,7 +290,7 @@ class SearchResults(QTreeView):
         self.setSelectionMode(self.ExtendedSelection)
 
     def uidOfItem(self, item):
-        return self.model().data(item, Qt.UserRole)
+        return self.model().data(item, Qt.ItemDataRole.UserRole)
 
     def optionsMenu(self):
         return self._optionsMenu
@@ -363,7 +363,7 @@ class SearchResults(QTreeView):
     #   self.selected.emit(curr)
 
     def entryFromIndex(self, i):
-        return self._index_model.entryOf(self.model().data(i, Qt.UserRole))
+        return self._index_model.entryOf(self.model().data(i, Qt.ItemDataRole.UserRole))
 
     def currentEntry(self):
         i = self.currentIndex()
@@ -412,12 +412,12 @@ class SearchBar(QWidget):
 
         self.searchAction.triggered.connect(self.obtainFocus)
         self.searchAction.setShortcut(QKeySequence.Find)
-        self.searchAction.setShortcutContext(Qt.WindowShortcut)
+        self.searchAction.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
 
         self.clearAction.setVisible(False)
         self.clearAction.triggered.connect(search.clear)
         self.clearAction.setShortcut(QKeySequence.Cancel)
-        self.clearAction.setShortcutContext(Qt.WindowShortcut)
+        self.clearAction.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
 
         search.textChanged.connect(
             lambda txt: self.clearAction.setVisible(len(txt) > 0)

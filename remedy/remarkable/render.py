@@ -110,12 +110,12 @@ class QGraphicsPathItemD(QGraphicsPathItem):
 
 
 class PencilBrushes:
-    def __init__(self, N=15, size=200, color=Qt.black):
+    def __init__(self, N=15, size=200, color=Qt.GlobalColor.black):
         from random import randint
 
         self._textures = []
         img = QImage(size, size, QImage.Format_ARGB32)
-        img.fill(Qt.transparent)
+        img.fill(Qt.GlobalColor.transparent)
         for i in range(N):
             for j in range(int(size * size * (i + 1) / N / 2.5)):
                 img.setPixelColor(randint(0, size - 1), randint(0, size - 1), color)
@@ -238,17 +238,17 @@ class PageGraphicsItem(QGraphicsRectItem):
                 "Simplification parameters ignored since the simplification library is not installed"
             )
 
-        noPen = QPen(Qt.NoPen)
+        noPen = QPen(Qt.PenStyle.NoPen)
         noPen.setWidth(0)
         self.setPen(noPen)
         eraserStroker = QPainterPathStroker()
-        eraserStroker.setCapStyle(Qt.RoundCap)
-        eraserStroker.setJoinStyle(Qt.RoundJoin)
+        eraserStroker.setCapStyle(Qt.PenCapStyle.RoundCap)
+        eraserStroker.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
 
         pen = QPen()
         pen.setWidth(1)
-        pen.setCapStyle(Qt.RoundCap)
-        pen.setJoinStyle(Qt.RoundJoin)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
 
         totalStrokes = sum(len(l.strokes) for l in page.layers)
         curStroke = 0
@@ -265,7 +265,7 @@ class PageGraphicsItem(QGraphicsRectItem):
             ):
                 # then
                 h = QGraphicsRectItem(self)
-                h.setPen(QPen(Qt.NoPen))
+                h.setPen(QPen(Qt.PenStyle.NoPen))
                 for hi in l.highlights:
                     hcolor = hi.get("color", 1)
                     for r in hi.get("rects", []):
@@ -276,7 +276,7 @@ class PageGraphicsItem(QGraphicsRectItem):
                             r.get("height", 0),
                             h,
                         )
-                        ri.setPen(QPen(Qt.NoPen))
+                        ri.setPen(QPen(Qt.PenStyle.NoPen))
                         ri.setBrush(palette.highlight(hcolor))
                         ri.setToolTip(hi.get("text", ""))
             group = QGraphicsPathItem()
@@ -292,7 +292,7 @@ class PageGraphicsItem(QGraphicsRectItem):
 
                 # COLOR
                 if tool == rm.ERASER_TOOL:
-                    pen.setColor(Qt.white)
+                    pen.setColor(Qt.GlobalColor.white)
                 else:
                     color = palette.colorFor(tool, k.color)
                     if color is None:
@@ -301,7 +301,7 @@ class PageGraphicsItem(QGraphicsRectItem):
                             rm.TOOL_NAME.get(tool, tool),
                             k.color,
                         )
-                        pen.setColor(Qt.red)
+                        pen.setColor(Qt.GlobalColor.red)
                     else:
                         pen.setColor(color)
 
@@ -361,7 +361,9 @@ class PageGraphicsItem(QGraphicsRectItem):
                     T1 = time.perf_counter()
                     # area = fullPageClip.subtracted(subarea)  # this alternative is also expensive
                     area.addPath(subarea)
-                    group.setFlag(QGraphicsItem.ItemClipsChildrenToShape)
+                    group.setFlag(
+                        QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape
+                    )
                     group.setPath(area)
                     ### good for testing:
                     # group.setPen(Qt.red)
@@ -402,7 +404,7 @@ class PageGraphicsItem(QGraphicsRectItem):
                     else:
                         # STANDARD
                         path = QPainterPath(QPointF(k.segments[0].x, k.segments[0].y))
-                        path.setFillRule(Qt.WindingFill)
+                        path.setFillRule(Qt.FillRule.WindingFill)
                         for (w, p), segments in groupby(k.segments[1:], calcwidth):
                             for s in segments:
                                 path.lineTo(s.x, s.y)
@@ -441,7 +443,7 @@ class PageGraphicsItem(QGraphicsRectItem):
                             if draw_hl_below and tool == rm.HIGHLIGHTER_TOOL:
                                 item.setZValue(-1)
                             path = QPainterPath(path.currentPosition())
-                            path.setFillRule(Qt.WindingFill)
+                            path.setFillRule(Qt.FillRule.WindingFill)
                         # END STANDARD
 
                 _progress(progress, curStroke, totalStrokes)
@@ -470,7 +472,7 @@ def pixmapOfBackground(bg):
 def BarePageScene(page, parent=None, include_base_layer=True, orientation=None, **kw):
     scene = QGraphicsScene(parent=parent)
     r = scene.addRect(0, 0, rm.WIDTH, rm.HEIGHT)
-    r.setFlag(QGraphicsItem.ItemClipsChildrenToShape)
+    r.setFlag(QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape)
     if page.background and page.background.name != "Blank" and include_base_layer:
         img = pixmapOfBackground(page.background)
         if img:

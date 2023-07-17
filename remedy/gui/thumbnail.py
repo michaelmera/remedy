@@ -38,7 +38,7 @@ class ThumbnailWorker(QRunnable):
             img = QImage(
                 self.height * s.width() / s.height(), self.height, QImage.Format_ARGB32
             )
-            img.fill(Qt.white)
+            img.fill(Qt.GlobalColor.white)
             painter = QPainter(img)
             painter.setRenderHint(QPainter.Antialiasing)
             painter.setRenderHint(QPainter.SmoothPixmapTransform)
@@ -52,7 +52,7 @@ class ThumbnailWorker(QRunnable):
                 if pdf:
                     painter.drawImage(img.rect(), pdf.toImage(d.cover(), 5.0))
             s.render(painter)
-            pen = QPen(Qt.gray)
+            pen = QPen(Qt.GlobalColor.gray)
             pen.setWidth(2)
             painter.setPen(pen)
             painter.drawRect(img.rect())

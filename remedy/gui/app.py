@@ -48,7 +48,7 @@ class RemedyApp(QApplication):
         self.setApplicationName("remedy")
         self.setApplicationDisplayName("Remedy")
         self.setWindowIcon(QIcon(":/assets/remedy.svg"))
-        self.setAttribute(Qt.AA_DontShowIconsInMenus, True)
+        self.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
 
         self._makeAppPaths()
         config = self.config = RemedyConfig(argv=sys.argv, paths=self.paths)
@@ -414,7 +414,7 @@ class RemedyInitWorker(QRunnable):
 
 
 def main():
-    QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling)
     log.setLevel(logging.INFO)
     log.info("STARTING: %s", time.asctime())
     try:

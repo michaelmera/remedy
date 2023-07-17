@@ -69,7 +69,9 @@ class ErrorItem(QWidget):
         if len(msg) > 30:
             msg = msg[:30] + '…  <a href="#">More info</a>'
         self.message = QLabel('<font color="Red">%s</font>' % msg)
-        self.message.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.message.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
         self.message.linkActivated.connect(self.showMsg)
         bla = QLabel("Bla")
         layout.addWidget(self.label)
@@ -107,7 +109,7 @@ class DocTreeItem(QTreeWidgetItem):
 
     def uploading(self, uid=None, etype=None, metadata=None, path=None, cancel=False):
         self._entry = None
-        self.setFlags(Qt.NoItemFlags)
+        self.setFlags(Qt.ItemFlag.NoItemFlags)
         self.setFirstColumnSpanned(True)
         title = metadata.get("visibleName", path.stem if path else "Untitled")
         doctype = DOCTYPE.get(etype)
@@ -144,10 +146,10 @@ class DocTreeItem(QTreeWidgetItem):
     def idle(self):
         if self._messages:
             self.setText(4, self._messages[-1][0])
-            self.setData(4, Qt.ToolTipRole, "Click for more info")
+            self.setData(4, Qt.ItemDataRole.ToolTipRole, "Click for more info")
         else:
             self.setText(4, "")
-            self.setData(4, Qt.ToolTipRole, "Up to date")
+            self.setData(4, Qt.ItemDataRole.ToolTipRole, "Up to date")
 
     def updating(self):
         self.setText(4, "updating")
@@ -164,7 +166,7 @@ class DocTreeItem(QTreeWidgetItem):
 
     def failure(self, uid=None, etype=None, metadata=None, path=None, exception=None):
         self._entry = None
-        self.setFlags(Qt.NoItemFlags)
+        self.setFlags(Qt.ItemFlag.NoItemFlags)
         self.setFirstColumnSpanned(True)
         title = metadata.get("visibleName", path.stem if path else "Unnamed")
         doctype = DOCTYPE.get(etype)
@@ -197,14 +199,14 @@ class DocTreeItem(QTreeWidgetItem):
         self.setFirstColumnSpanned(False)
         self._entry = entry
         icon = self.treeWidget()._icon
-        self.setData(0, Qt.UserRole, entry.uid)
-        flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        self.setData(0, Qt.ItemDataRole.UserRole, entry.uid)
+        flags = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
         self.setText(5, ",".join(entry.allTags()))
         # commented flag settings should be uncommented once move is implemented
         if isinstance(entry, Document):
-            flags |= Qt.ItemNeverHasChildren  # | Qt.ItemIsDragEnabled
+            flags |= Qt.ItemFlag.ItemNeverHasChildren  # | Qt.ItemFlag.ItemIsDragEnabled
             if not entry.index.isReadOnly() and not entry.isDeleted():
-                flags |= Qt.ItemIsEditable
+                flags |= Qt.ItemFlag.ItemIsEditable
             self.setText(0, entry.visibleName)
             if isinstance(entry, Notebook):
                 self.setIcon(0, icon["notebook"])
@@ -223,17 +225,17 @@ class DocTreeItem(QTreeWidgetItem):
                     "before being able to properly preview its contents in Remedy."
                 )
         elif isinstance(entry, TrashBin):
-            flags = Qt.ItemIsEnabled
-            # flags |= Qt.ItemIsDropEnabled
+            flags = Qt.ItemFlag.ItemIsEnabled
+            # flags |= Qt.ItemFlag.ItemIsDropEnabled
             self.setText(0, entry.visibleName)
             self.setIcon(0, icon["trash"])
             self.setText(3, "Trash Bin")
             self.setText(2, "")
         else:
-            # flags |= Qt.ItemIsDropEnabled | Qt.ItemIsDragEnabled
-            flags |= Qt.ItemIsDropEnabled
+            # flags |= Qt.ItemFlag.ItemIsDropEnabled | Qt.ItemFlag.ItemIsDragEnabled
+            flags |= Qt.ItemFlag.ItemIsDropEnabled
             if not entry.index.isReadOnly() and not entry.isDeleted():
-                flags |= Qt.ItemIsEditable
+                flags |= Qt.ItemFlag.ItemIsEditable
             self.setText(0, entry.visibleName)
             self.setIcon(0, icon["folder"])
             # self.setText(1, entry.updatedOn()) # not very useful (unrelated to contents)
@@ -348,7 +350,7 @@ class DocTree(QTreeWidget):
                     if d.deleted:
                         c.warning("Item deleted from trash but still on disk")
 
-        self.sortItems(0, Qt.AscendingOrder)
+        self.sortItems(0, Qt.SortOrder.AscendingOrder)
         self.resizeColumnToContents(2)
         self.resizeColumnToContents(4)
         if index.isReadOnly():
@@ -516,7 +518,7 @@ class DocTree(QTreeWidget):
         return ["text/uri-list"]
 
     def supportedDropActions(self):
-        return Qt.CopyAction
+        return Qt.DropAction.CopyAction
 
     _dropTargetItem = None
 

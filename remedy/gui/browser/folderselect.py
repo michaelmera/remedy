@@ -40,7 +40,7 @@ class FolderSelectDialog(QDialog):
         p = nodes[uid] = QTreeWidgetItem(tree)  # tree.invisibleRootItem()
         p.setText(0, self._rootEntry.visibleName)
         p.setIcon(0, self._icon)
-        p.setData(0, Qt.UserRole, uid)
+        p.setData(0, Qt.ItemDataRole.UserRole, uid)
 
         for f in index.scanFolders(uid):
             p = nodes[f.uid]
@@ -49,7 +49,7 @@ class FolderSelectDialog(QDialog):
                 c = nodes[d.uid] = QTreeWidgetItem(p)
                 c.setIcon(0, self._icon)
                 c.setText(0, d.visibleName)
-                c.setData(0, Qt.UserRole, d.uid)
+                c.setData(0, Qt.ItemDataRole.UserRole, d.uid)
 
         # hide excluded
         for i in exclude:
@@ -72,4 +72,4 @@ class FolderSelectDialog(QDialog):
         self.setLayout(layout)
 
     def selectedFolder(self):
-        return self.tree.currentItem().data(0, Qt.UserRole)
+        return self.tree.currentItem().data(0, Qt.ItemDataRole.UserRole)
