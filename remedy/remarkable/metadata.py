@@ -73,7 +73,7 @@ BOTH = 3
 
 class Entry:
     @staticmethod
-    def from_dict(index, uid, metadata, content) -> Entry | None:
+    def from_dict(index, uid, metadata, content) -> Entry:
         if metadata["type"] == FOLDER_TYPE:
             return Folder(index, uid, metadata, content)
 
@@ -85,7 +85,7 @@ class Entry:
             elif content["fileType"] == "epub":
                 return EBook(index, uid, metadata, content)
 
-        return None
+        return Unknown(index, uid, metadata, content)
 
     def __init__(self, index, uid, metadata={}, content={}):
         self.index = index
@@ -236,6 +236,14 @@ class Folder(Entry):
 
     def typeName(self):
         return "folder"
+
+
+class Unknown(Entry):
+    def get(self, field, default=None):
+        return default
+
+    def typeName(self):
+        return "unknown"
 
 
 ROOT_ID = ""
@@ -635,8 +643,6 @@ class RemarkableIndex:
                 tags[t["name"]]["pages"].append({"doc": uid, "page": t["pageId"]})
 
             index[uid] = Entry.from_dict(self, uid, metadata, content)
-            if index[uid] is None:
-                raise RemarkableDocumentError(f"Unknown document type with uid '{uid}'")
 
         trash = TrashBin(self)
         for k, prop in index.items():

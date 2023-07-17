@@ -64,6 +64,7 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
             "pdf": QIcon(":assets/24/pdf.svg"),
             "epub": QIcon(":assets/24/epub.svg"),
             "notebook": QIcon(":assets/24/notebook.svg"),
+            "unknown": QIcon(":assets/24/unknown.svg"),
         }
         self._filterName = QSortFilterProxyModel()
         self._filterType = QSortFilterProxyModel()
