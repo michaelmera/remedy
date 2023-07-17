@@ -109,7 +109,9 @@ class RemedyConfig:
             with open(path) as f:
                 self._original = json.load(f)
         except Exception:
-            raise RemedyConfigException("Could not read configuration from '%s'!" % path)
+            raise RemedyConfigException(
+                "Could not read configuration from '%s'!" % path
+            )
         deepupdate(self._config, self._original)
         self._path = path
 
