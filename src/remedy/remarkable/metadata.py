@@ -21,6 +21,7 @@ NOTEBOOK = 1
 PDF = 2
 EPUB = 4
 FOLDER = 8
+UNKNOWN = 16
 DELETED_NOTEBOOK = NOTEBOOK << 4
 DELETED_PDF = PDF << 4
 DELETED_EPUB = EPUB << 4
@@ -81,6 +82,7 @@ class Entry:
 
         self._metadata.setdefault('parent', ROOT_ID)
         self._metadata.setdefault('deleted', False)
+        self._metadata.setdefault('visibleName', uid)
 
     def _postInit(self):
         pass
@@ -218,7 +220,7 @@ class Folder(Entry):
 
 
 class Unknown(Entry):
-    def get(self, field, default=None):
+    def get(self, field, default=None, where=BOTH):
         return default
 
     def typeName(self):
@@ -593,7 +595,7 @@ class RemarkableIndex:
 
         j = 0
         for j, uid in enumerate(uids):
-            progress(j, len(uids) * 2)
+            progress(j, len(uids))
 
             metadata = self.fsource.readJson(uid, ext='metadata')
             content = self.fsource.readJson(uid, ext='content')
@@ -623,7 +625,7 @@ class RemarkableIndex:
             if entry.parent is not None:
                 if entry.type == FOLDER_TYPE:
                     self.index[entry.parent].folders.append(uid)
-                elif entry.type == DOCUMENT_TYPE:
+                else:
                     self.index[entry.parent].files.append(uid)
 
     def _new_entry_prepare(self, uid, etype, meta, path=None):

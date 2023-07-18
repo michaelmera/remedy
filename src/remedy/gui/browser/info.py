@@ -25,6 +25,7 @@ from remedy.remarkable.metadata import (
     PDFDoc,
     RootFolder,
     TrashBin,
+    Unknown,
 )
 from remedy.utils import log
 
@@ -235,6 +236,9 @@ class InfoPanel(QWidget):
         elif isinstance(entry, TrashBin):
             self.title.setText('Trash')
             self.setIcon(QPixmap(':assets/128/trash.svg'))
+        elif isinstance(entry, Unknown):
+            self.title.setText('Unknown')
+            self.setIcon(QPixmap(':assets/128/unknown.svg'))
         elif isinstance(entry, Folder):
             self.title.setText(entry.visibleName)
             self.setIcon(QPixmap(':assets/128/folder-open.svg'))

@@ -22,16 +22,18 @@ from remedy.remarkable.metadata import (
     FOLDER,
     PDF,
     ROOT_ID,
+    UNKNOWN,
     Document,
     EBook,
     Entry,
     Notebook,
     PDFDoc,
     TrashBin,
+    Unknown,
 )
 from remedy.utils import log
 
-DOCTYPE = {PDF: 'pdf', FOLDER: 'folder', EPUB: 'epub'}
+DOCTYPE = {PDF: 'pdf', FOLDER: 'folder', EPUB: 'epub', UNKNOWN: 'unknown'}
 
 
 def doctype_sortcode(t):
@@ -219,6 +221,7 @@ class DocTreeItem(QTreeWidgetItem):
             elif isinstance(entry, EBook):
                 self.setIcon(0, icon['epub'])
                 self.setText(3, 'EBook')
+
             self.setText(1, entry.updatedOn())
             self.setText(2, '1' if entry.pinned else '')
             if entry.shouldHaveBaseDocument() and not entry.hasBaseDocument():
@@ -233,6 +236,10 @@ class DocTreeItem(QTreeWidgetItem):
             self.setIcon(0, icon['trash'])
             self.setText(3, 'Trash Bin')
             self.setText(2, '')
+        elif isinstance(entry, Unknown):
+            self.setIcon(0, icon['unknown'])
+            self.setText(0, entry.visibleName)
+            self.setText(3, 'Unknown')
         else:
             # flags |= Qt.ItemFlag.ItemIsDropEnabled | Qt.ItemFlag.ItemIsDragEnabled
             flags |= Qt.ItemFlag.ItemIsDropEnabled
@@ -321,6 +328,7 @@ class DocTree(QTreeWidget):
             'pdf': QIcon(QPixmap(':assets/24/pdf.svg')),
             'epub': QIcon(QPixmap(':assets/24/epub.svg')),
             'notebook': QIcon(QPixmap(':assets/24/notebook.svg')),
+            'unknown': QIcon(QPixmap(':assets/24/unknown.svg')),
         }
 
         nodes = self._nodes = {}
