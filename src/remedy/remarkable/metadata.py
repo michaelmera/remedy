@@ -91,6 +91,9 @@ class Entry:
         self._content = content
         self._postInit()
 
+        self._metadata.setdefault('parent', ROOT_ID)
+        self._metadata.setdefault('deleted', False)
+
     def _postInit(self):
         pass
 
@@ -640,20 +643,15 @@ class RemarkableIndex:
 
             entry = Entry.from_dict(self, uid, metadata, content)
             self.index[uid] = entry
-            try:
-                if entry.deleted or entry.parent == TRASH_ID:
-                    self.trash.append(entry)
-                    continue
-                parent = entry.parent
-                if parent is not None:
-                    if entry.type == FOLDER_TYPE:
-                        self.index[parent].folders.append(uid)
-                    elif entry.type == DOCUMENT_TYPE:
-                        self.index[parent].files.append(uid)
-            except KeyError as e:
-                raise RemarkableDocumentError(
-                    f'Could not find field {e} in document {uid}'
-                )
+            if entry.deleted or entry.parent == TRASH_ID:
+                self.trash.append(entry)
+                continue
+
+            if entry.parent is not None:
+                if entry.type == FOLDER_TYPE:
+                    self.index[entry.parent].folders.append(uid)
+                elif entry.type == DOCUMENT_TYPE:
+                    self.index[entry.parent].files.append(uid)
 
     def _new_entry_prepare(self, uid, etype, meta, path=None):
         pass  # for subclasses to specialise
