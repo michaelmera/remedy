@@ -611,8 +611,9 @@ class RemarkableIndex:
     def __init__(self, fsource, progress=(lambda x, tot: None)):
         self.fsource = fsource
         uids = list(fsource.listItems())
-        index = {ROOT_ID: RootFolder(self)}
-        tags = {}
+        self.index = {ROOT_ID: RootFolder(self)}
+        self.trash = TrashBin(self)
+        self.tags = {}
 
         j = 0
         for j, uid in enumerate(uids):
@@ -622,44 +623,37 @@ class RemarkableIndex:
             content = self.fsource.readJson(uid, ext='content')
 
             for t in content.get('tags', []):
-                if t['name'] not in tags:
-                    tags[t['name']] = {
+                if t['name'] not in self.tags:
+                    self.tags[t['name']] = {
                         'docs': [],
                         'pages': [],
                     }
-                tags[t['name']]['docs'].append(uid)
+                self.tags[t['name']]['docs'].append(uid)
 
             for t in content.get('pageTags', []):
-                if t['name'] not in tags:
-                    tags[t['name']] = {
+                if t['name'] not in self.tags:
+                    self.tags[t['name']] = {
                         'docs': [],
                         'pages': [],
                     }
-                tags[t['name']]['pages'].append({'doc': uid, 'page': t['pageId']})
+                self.tags[t['name']]['pages'].append({'doc': uid, 'page': t['pageId']})
 
-            index[uid] = Entry.from_dict(self, uid, metadata, content)
-
-        trash = TrashBin(self)
-        for j, (uid, prop) in enumerate(index.items()):
-            progress(len(uids) + j, len(uids) * 2)
+            entry = Entry.from_dict(self, uid, metadata, content)
+            self.index[uid] = entry
             try:
-                if prop.deleted or prop.parent == TRASH_ID:
-                    trash.append(prop)
+                if entry.deleted or entry.parent == TRASH_ID:
+                    self.trash.append(entry)
                     continue
-                parent = prop.parent
+                parent = entry.parent
                 if parent is not None:
-                    if prop.type == FOLDER_TYPE:
-                        index[parent].folders.append(uid)
-                    elif prop.type == DOCUMENT_TYPE:
-                        index[parent].files.append(uid)
+                    if entry.type == FOLDER_TYPE:
+                        self.index[parent].folders.append(uid)
+                    elif entry.type == DOCUMENT_TYPE:
+                        self.index[parent].files.append(uid)
             except KeyError as e:
                 raise RemarkableDocumentError(
                     f'Could not find field {e} in document {uid}'
                 )
-
-        self.index = index
-        self.trash = trash
-        self.tags = tags
 
     def _new_entry_prepare(self, uid, etype, meta, path=None):
         pass  # for subclasses to specialise
