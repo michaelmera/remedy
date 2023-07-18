@@ -14,8 +14,6 @@ from remedy.remarkable.lines import Layer, readLines
 from remedy.remarkable.pdfbase import PDFBase
 from remedy.utils import deepupdate, log
 
-FolderNode = namedtuple('FolderNode', 'folders files')
-
 FOLDER_TYPE = 'CollectionType'
 DOCUMENT_TYPE = 'DocumentType'
 
