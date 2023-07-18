@@ -640,7 +640,7 @@ class RemarkableIndex:
             index[uid] = Entry.from_dict(self, uid, metadata, content)
 
         trash = TrashBin(self)
-        for k, prop in index.items():
+        for j, (uid, prop) in enumerate(index.items()):
             progress(len(uids) + j, len(uids) * 2)
             try:
                 if prop.deleted or prop.parent == TRASH_ID:
@@ -649,12 +649,12 @@ class RemarkableIndex:
                 parent = prop.parent
                 if parent is not None:
                     if prop.type == FOLDER_TYPE:
-                        index[parent].folders.append(k)
+                        index[parent].folders.append(uid)
                     elif prop.type == DOCUMENT_TYPE:
-                        index[parent].files.append(k)
+                        index[parent].files.append(uid)
             except KeyError as e:
                 raise RemarkableDocumentError(
-                    f'Could not find field {e} in document {k}'
+                    f'Could not find field {e} in document {uid}'
                 )
 
         self.index = index
@@ -773,40 +773,11 @@ class RemarkableIndex:
                 return k
         return None
 
-    def typeOf(self, uid):
-        # Usage: bool(index.typeOf(uid) & NOTEBOOK)
-        if uid == '' or uid == TRASH_ID:
-            return FOLDER
-        if uid not in self.index:
-            return None
-        t = 0
-        if self.index[uid].type == FOLDER_TYPE:
-            t = FOLDER
-        elif self.index[uid].fileType in ['', 'notebook']:
-            t = NOTEBOOK
-        elif self.index[uid].fileType == 'pdf':
-            t = PDF
-        elif self.index[uid].fileType == 'epub':
-            t = EPUB
-        if not self.index[uid].deleted:
-            t = t >> 4
-        return t
-
     def matchId(self, pid):
         for k in self.index:
             if k.startswith(pid):
                 return k
         return None
-
-    def findByName(self, name, exact=False):
-        if exact:
-            for k in self.index:
-                if name == self.index[k].visibleName:
-                    yield k
-        else:
-            for k in self.index:
-                if name in self.index[k].visibleName:
-                    yield k
 
     def isFile(self, uid):
         return uid != TRASH_ID and (
@@ -866,27 +837,6 @@ class RemarkableIndex:
                 yield n
                 for f in n.folders:
                     stack.append(self.index[f])
-
-    def depthFirst(self, uid=ROOT_ID):
-        if isinstance(uid, Entry):
-            n = uid
-        elif uid == TRASH_ID:
-            n = self.trash
-        else:
-            n = self.index[uid]
-        if isinstance(n, Folder):
-            stack = [(False, n)]
-            while stack:
-                visited, node = stack.pop()
-                if visited:
-                    yield n
-                else:
-                    yield from n.files
-                    for f in n.folders:
-                        stack.append((False, self.index[f]))
-                    stack.append((True, n))
-        else:
-            yield n
 
     _reservedUids = set()
 
