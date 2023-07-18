@@ -49,11 +49,11 @@ remedy = "remedy.gui.app:main"
 Homepage = "https://github.com/michaelmera/remedy"
 
 [tool.hatch.version]
-path = "remedy/__init__.py"
+path = "src/remedy/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/remedy",
+    "/src/remedy",
     "/assets",
 ]
 
