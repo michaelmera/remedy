@@ -443,7 +443,7 @@ class FileBrowser(QMainWindow):
         if entry:
             uid = entry.uid
             index = self.index
-            if not index.isOfType(uid, FOLDER):
+            if not index.isFolder(uid):
                 if uid not in self.viewers:
                     self.viewers[uid] = NotebookViewer(index.get(uid))
                 win = self.viewers[uid]

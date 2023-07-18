@@ -773,27 +773,6 @@ class RemarkableIndex:
                 return k
         return None
 
-    def isOfType(self, uid, mask):
-        mask = mask & ANYTHING
-        if uid == '':
-            return bool(mask & FOLDER) and not (mask & DELETED)
-        if uid == TRASH_ID:
-            return bool(mask & FOLDER)
-        if uid not in self.index:
-            return None
-        t = 0
-        if self.index[uid].type == FOLDER_TYPE:
-            t = FOLDER
-        elif self.index[uid].fileType in ['', 'notebook']:
-            t = NOTEBOOK
-        elif self.index[uid].fileType == 'pdf':
-            t = PDF
-        elif self.index[uid].fileType == 'epub':
-            t = EPUB
-        if not self.index[uid].deleted:
-            t = t >> 4
-        return bool(mask & t)
-
     def typeOf(self, uid):
         # Usage: bool(index.typeOf(uid) & NOTEBOOK)
         if uid == '' or uid == TRASH_ID:
