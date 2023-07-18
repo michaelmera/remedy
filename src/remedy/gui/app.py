@@ -44,7 +44,7 @@ class RemedyApp(QApplication):
         QApplication.__init__(self, args)
         self.setQuitOnLastWindowClosed(False)
 
-        self.setOrganizationDomain('emanueledosualdo.com')
+        self.setOrganizationDomain('michaelmera.com')
         self.setApplicationName('remedy')
         self.setApplicationDisplayName('Remedy')
         self.setWindowIcon(QIcon(':/assets/remedy.svg'))
