@@ -32,6 +32,10 @@ dependencies = [
 default = [
     "pymupdf",
 ]
+testing = [
+    "pytest",
+    "assertpy",
+]
 mupdf = [
     "pymupdf",
 ]
@@ -56,6 +60,22 @@ include = [
     "/src/remedy",
     "/assets",
 ]
+
+[tool.hatch.envs.units]
+description = "Run unit tests"
+env-include = [
+    "PYTEST_*"
+]
+dependencies = [
+    "pytest",
+    "assertpy"
+]
+
+[[tool.hatch.envs.units.matrix]]
+python = ["3.10", "3.11"]
+
+[tool.hatch.envs.units.scripts]
+all = "pytest tests/units"
 
 [tool.black]
 target-version = ['py310','py311']
