@@ -31,9 +31,6 @@ class FileSource:
         """Don't try uploading if it is readOnly!"""
         return True
 
-    def needsRestart(self):
-        return False
-
     def retrieve(self, *remote, ext=None, progress=None, force=False):
         """
         Given a path `filename` relative to the documents root

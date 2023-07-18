@@ -17,16 +17,6 @@ try:
 except Exception:
     simpl = None
 
-DEFAULT_TEXT_TOOLS = [rm.BALLPOINT_TOOL, rm.FINELINER_TOOL, rm.MECH_PENCIL_TOOL]
-
-ARTISTIC_TOOLS = {
-    rm.BRUSH_TOOL,
-    rm.PENCIL_TOOL,
-    rm.HIGHLIGHTER_TOOL,
-    rm.ERASER_TOOL,
-    rm.ERASE_AREA_TOOL,
-}
-
 
 class MathPixError(Exception):
     def __init__(self, result):
@@ -64,56 +54,6 @@ def mathpixRaster(page, app_id, app_key, scale=0.5, **opt):
         i = result['error_info']['id']
         if i == 'image_no_content':
             return {'text': ''}
-        raise MathPixError(result)
-    return result
-
-
-DEFAULT_EXCLUDE_TOOLS = {
-    rm.BRUSH_TOOL,
-    rm.PENCIL_TOOL,
-    rm.HIGHLIGHTER_TOOL,
-    rm.ERASER_TOOL,
-    rm.ERASE_AREA_TOOL,
-}
-
-
-def mathpixStrokes(
-    page, app_id, app_key, simplify=True, exclude_tools=DEFAULT_EXCLUDE_TOOLS
-):
-    if simpl is None:
-        simplify = False
-        log.warning(
-            'Simplification parameters ignored since the simplification library is not installed'
-        )
-    x = []
-    y = []
-    for l in page.layers:
-        for k in l.strokes:
-            if rm.TOOL_ID.get(k.pen) not in exclude_tools:
-                if simplify:
-                    s = simpl(k)
-                    x.append([p[0] for p in s])
-                    y.append([p[1] for p in s])
-                else:
-                    x.append([s.x for s in k.segments])
-                    y.append([s.y for s in k.segments])
-    data = json.dumps({'strokes': {'strokes': {'x': x, 'y': y}}})
-    if len(data) > 512000:
-        log.warning(
-            'Mathpix: too many strokes for a single request: %dKb  (max 512Kb).',
-            len(data) // 1000,
-        )
-    r = requests.post(
-        'https://api.mathpix.com/v3/strokes',
-        data=data,
-        headers={
-            'app_id': app_id,
-            'app_key': app_key,
-            'Content-type': 'application/json',
-        },
-    )
-    result = r.json()
-    if 'error' in result:
         raise MathPixError(result)
     return result
 

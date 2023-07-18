@@ -31,18 +31,8 @@ PDF = PDF | DELETED_PDF
 EPUB = EPUB | DELETED_EPUB
 FOLDER = FOLDER | DELETED_FOLDER
 
-DOCUMENT = NOTEBOOK | PDF | EPUB
-DELETED = (DOCUMENT | FOLDER) << 4
-NOT_DELETED = DELETED >> 4
-NOTHING = 0
-ANYTHING = 0xFF
-
 
 class RemarkableError(Exception):
-    pass
-
-
-class RemarkableDocumentError(RemarkableError):
     pass
 
 
@@ -147,12 +137,6 @@ class Entry:
     def updatedFullDate(self, default='Unknown'):
         try:
             return self.updatedDate().format('d MMM YYYY [at] hh:mm')
-        except Exception as e:
-            return default
-
-    def openedOn(self, default='Unknown'):
-        try:
-            return arrow.get(int(self.lastOpened) / 1000).humanize()
         except Exception as e:
             return default
 
@@ -500,9 +484,6 @@ class PDFBasedDoc(Document):
     def baseDocumentName(self):
         return self.uid + '.pdf'
 
-    def originalName(self):
-        return self.uid + '.pdf'
-
     def _fallbackPageCount(self):
         return self._pdf.pageCount()
 
@@ -513,9 +494,6 @@ class PDFDoc(PDFBasedDoc):
 
 
 class EBook(PDFBasedDoc):
-    def originalName(self):
-        return self.uid + '.epub'
-
     def typeName(self):
         return 'epub'
 
@@ -727,52 +705,11 @@ class RemarkableIndex:
             p = '/' + p
         return p
 
-    def uidFromPath(self, path, start=ROOT_ID, delim=None):
-        p = path
-        if delim is not None:
-            p = path.rstrip(delim).split(delim)
-        if not p:
-            return ROOT_ID
-        node = self.index[start]
-        if p[0] == '' or p[0] == '/':
-            node = self.root()
-        for name in p[0:-1]:
-            if name == '.' or name == '' or name == '/':
-                continue
-            if name == '..':
-                node = self.index[node.parent]
-                continue
-            newfound = None
-            for k in node.folders:
-                if self.index[k].visibleName == name:
-                    newfound = k
-                    node = self.index[k]
-                    break
-            if not newfound:
-                return None
-        last = p[-1]
-        if last == '.' or last == '' or last == '/':
-            return node.uid
-        if last == '..':
-            return node.parent
-        for k in node.folders:
-            if self.index[k].visibleName == last:
-                return k
-        for k in node.files:
-            if self.index[k].visibleName == last:
-                return k
-        return None
-
     def matchId(self, pid):
         for k in self.index:
             if k.startswith(pid):
                 return k
         return None
-
-    def isFile(self, uid):
-        return uid != TRASH_ID and (
-            uid in self.index and self.index[uid].type == DOCUMENT_TYPE
-        )
 
     def isFolder(self, uid):
         return uid == TRASH_ID or (
