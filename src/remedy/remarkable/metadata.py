@@ -617,6 +617,7 @@ class RemarkableIndex:
         index = {ROOT_ID: RootFolder(self)}
         tags = {}
 
+        j = 0
         for j, uid in enumerate(uids):
             progress(j, len(uids) * 2)
             metadata = self._readJson(uid, ext="metadata")
