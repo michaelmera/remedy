@@ -74,6 +74,9 @@ BOTH = 3
 class Entry:
     @staticmethod
     def from_dict(index, uid, metadata, content) -> Entry:
+        if "type" not in metadata:
+            return Unknown(index, uid, metadata, content)
+
         if metadata["type"] == FOLDER_TYPE:
             return Folder(index, uid, metadata, content)
 
@@ -620,12 +623,9 @@ class RemarkableIndex:
         j = 0
         for j, uid in enumerate(uids):
             progress(j, len(uids) * 2)
-            metadata = self._readJson(uid, ext="metadata")
-            content = self._readJson(uid, ext="content")
 
-            if not metadata:
-                log.warning("Could not load json file %s.metadata", uid)
-                continue
+            metadata = self.fsource.readJson(uid, ext="metadata")
+            content = self.fsource.readJson(uid, ext="content")
 
             for t in content.get("tags", []):
                 if t["name"] not in tags:
@@ -666,14 +666,6 @@ class RemarkableIndex:
         self.index = index
         self.trash = trash
         self.tags = tags
-
-    def _readJson(self, *remote, ext=None):
-        try:
-            fname = self.fsource.retrieve(*remote, ext=ext)
-            with open(fname) as f:
-                return json.load(f)
-        except Exception as e:
-            return dict()
 
     def _new_entry_prepare(self, uid, etype, meta, path=None):
         pass  # for subclasses to specialise

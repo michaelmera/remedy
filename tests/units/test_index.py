@@ -8,8 +8,11 @@ class MemorySource(FileSource):
         super().__init__()
         self.items = {}
 
+    def readJson(self, remote, ext=None):
+        return self.items.get(remote, dict()).get(ext, dict())
+
     def listItems(self):
-        yield from self.items
+        yield from self.items.keys()
 
 
 def test_index_has_root_folder() -> None:
@@ -44,3 +47,12 @@ def test_trash_folder_has_no_parent() -> None:
 
     assert_that(index.trash).is_not_none()
     assert_that(index.trash.parentEntry()).is_none()
+
+
+def test_deleted_files_are_in_trash() -> None:
+    source = MemorySource()
+    source.items["uid1"] = {"metadata": {"deleted": True}}
+    index = RemarkableIndex(source)
+
+    assert_that(index.get("uid1")).is_not_none()
+    assert_that(index.trash.items()).contains("uid1")

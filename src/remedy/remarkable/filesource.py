@@ -18,6 +18,14 @@ class FileSource:
     Should guarantee thread safety if used on disjoint paths.
     """
 
+    def readJson(self, remote, ext=None):
+        try:
+            fname = self.retrieve((remote,), ext=ext)
+            with open(fname) as f:
+                return json.load(f)
+        except Exception as e:
+            return dict()
+
     def isReadOnly(self):
         """Don't try uploading if it is readOnly!"""
         return True
