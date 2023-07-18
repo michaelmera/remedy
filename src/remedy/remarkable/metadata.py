@@ -100,9 +100,6 @@ class Entry:
     def isFolder(self):
         return self.index.isFolder(self.uid)
 
-    def isTrash(self):
-        return self.index.isTrash(self.uid)
-
     def parentEntry(self):
         if self.parent is None:
             return None
@@ -714,9 +711,6 @@ class RemarkableIndex:
         return uid == TRASH_ID or (
             uid in self.index and self.index[uid].type == FOLDER_TYPE
         )
-
-    def isTrash(self, uid):
-        return uid == TRASH_ID
 
     def updatedOn(self, uid):
         try:
