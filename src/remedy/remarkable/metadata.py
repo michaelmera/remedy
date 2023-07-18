@@ -656,15 +656,14 @@ class RemarkableIndex:
     def root(self):
         return self.index[ROOT_ID]
 
-    def get(self, uid, exact=True):
-        if not exact:
-            uid = self.matchId(uid)
+    def get(self, uid):
         if uid in self.index:
             return self.index[uid]
-        elif uid == TRASH_ID:
+
+        if uid == TRASH_ID:
             return self.trash
-        else:
-            raise RemarkableError('Uid %s not found!' % uid)
+
+        raise RemarkableError('Uid %s not found!' % uid)
 
     def allUids(self):
         return self.index.keys()
