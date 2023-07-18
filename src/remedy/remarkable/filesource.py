@@ -25,7 +25,7 @@ class FileSource:
     def needsRestart(self):
         return False
 
-    def retrieve(self, *remote, progress=None, force=False):
+    def retrieve(self, *remote, ext=None, progress=None, force=False):
         """
         Given a path `filename` relative to the documents root
         return a local path with the data in it.
