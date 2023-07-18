@@ -1,4 +1,3 @@
-import time
 from os import path
 
 from PyQt5.QtCore import Qt, pyqtSlot
@@ -16,14 +15,12 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from remedy import *
 from remedy.gui.export.palette import PaletteSelector
 from remedy.remarkable.export import (
     parseExcludeLayers,
     validateExcludeLayers,
     validatePageRanges,
 )
-from remedy.remarkable.palette import Palette
 from remedy.utils import log
 
 

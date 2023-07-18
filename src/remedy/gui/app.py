@@ -1,5 +1,3 @@
-import json
-import shutil
 import signal
 import sys
 import time
@@ -10,18 +8,20 @@ from PyQt5.QtCore import (
     QObject,
     QRunnable,
     QStandardPaths,
+    Qt,
+    QThreadPool,
+    QUrl,
     pyqtSignal,
     pyqtSlot,
 )
-from PyQt5.QtWidgets import QApplication, QProgressDialog
+from PyQt5.QtGui import QDesktopServices, QIcon, QPixmap
+from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox, QProgressDialog
 
-import remedy.gui.resources
 from remedy.connect import BadHostKeyException, UnknownHostKeyException
 from remedy.connect import connect as sshconnect
-from remedy.gui.browser import *
-from remedy.gui.notebookview import *
-from remedy.gui.qmetadata import *
-from remedy.remarkable.config import *
+from remedy.gui.browser import FileBrowser
+from remedy.gui.qmetadata import QRemarkableIndex, RemarkableIndex
+from remedy.remarkable.config import AppPaths, RemedyConfig, RemedyConfigException
 from remedy.remarkable.filesource import (
     LiveFileSourceRsync,
     LiveFileSourceSSH,

@@ -1,9 +1,5 @@
-import json
-import os.path
 import struct
 from collections import namedtuple
-
-from remedy.remarkable.constants import *
 
 Layer = namedtuple('Layer', ['strokes', 'name', 'highlights'])
 

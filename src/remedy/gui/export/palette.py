@@ -2,7 +2,6 @@ from PyQt5.QtCore import QPoint, QRect, QSize, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QPainter
 from PyQt5.QtWidgets import QApplication, QColorDialog, QComboBox, QHBoxLayout, QWidget
 
-from remedy import *
 from remedy.remarkable.constants import COLORS
 from remedy.remarkable.palette import Palette
 from remedy.utils import log

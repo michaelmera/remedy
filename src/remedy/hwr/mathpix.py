@@ -1,14 +1,11 @@
-import base64
 import json
-import sys
 
 import requests
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import QDir, Qt, QTemporaryFile
+from PyQt5.QtGui import QImage, QPainter
 
-from remedy.remarkable.constants import *
-from remedy.remarkable.render import IGNORE_ERASER, BarePageScene
+import remedy.remarkable.constants as rm
+from remedy.remarkable.render import BarePageScene
 from remedy.utils import log
 
 try:
@@ -20,14 +17,14 @@ try:
 except Exception:
     simpl = None
 
-DEFAULT_TEXT_TOOLS = [BALLPOINT_TOOL, FINELINER_TOOL, MECH_PENCIL_TOOL]
+DEFAULT_TEXT_TOOLS = [rm.BALLPOINT_TOOL, rm.FINELINER_TOOL, rm.MECH_PENCIL_TOOL]
 
 ARTISTIC_TOOLS = {
-    BRUSH_TOOL,
-    PENCIL_TOOL,
-    HIGHLIGHTER_TOOL,
-    ERASER_TOOL,
-    ERASE_AREA_TOOL,
+    rm.BRUSH_TOOL,
+    rm.PENCIL_TOOL,
+    rm.HIGHLIGHTER_TOOL,
+    rm.ERASER_TOOL,
+    rm.ERASE_AREA_TOOL,
 }
 
 
@@ -39,7 +36,7 @@ class MathPixError(Exception):
 
 def mathpixRaster(page, app_id, app_key, scale=0.5, **opt):
     s = BarePageScene(page, **opt)
-    img = QImage(scale * WIDTH, scale * HEIGHT, QImage.Format_RGB32)
+    img = QImage(scale * rm.WIDTH, scale * rm.HEIGHT, QImage.Format_RGB32)
     img.fill(Qt.GlobalColor.white)
     painter = QPainter(img)
     painter.setRenderHint(QPainter.Antialiasing)
@@ -72,11 +69,11 @@ def mathpixRaster(page, app_id, app_key, scale=0.5, **opt):
 
 
 DEFAULT_EXCLUDE_TOOLS = {
-    BRUSH_TOOL,
-    PENCIL_TOOL,
-    HIGHLIGHTER_TOOL,
-    ERASER_TOOL,
-    ERASE_AREA_TOOL,
+    rm.BRUSH_TOOL,
+    rm.PENCIL_TOOL,
+    rm.HIGHLIGHTER_TOOL,
+    rm.ERASER_TOOL,
+    rm.ERASE_AREA_TOOL,
 }
 
 
@@ -92,7 +89,7 @@ def mathpixStrokes(
     y = []
     for l in page.layers:
         for k in l.strokes:
-            if TOOL_ID.get(k.pen) not in exclude_tools:
+            if rm.TOOL_ID.get(k.pen) not in exclude_tools:
                 if simplify:
                     s = simpl(k)
                     x.append([p[0] for p in s])

@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QColor
 
-from remedy.remarkable.constants import *
+import remedy.remarkable.constants as rm
 
 # DEFAULT_COLORS = {
 #   0: Qt.black,
@@ -28,7 +28,7 @@ class Palette:
         # super(Palette, self).__init__()
         self._palette = {}
         self._name = name
-        for cname, color in COLORS.items():
+        for cname, color in rm.COLORS.items():
             self._palette[cname] = QColor(colors.get(cname, color))
 
     def name(self):
@@ -44,13 +44,13 @@ class Palette:
         self._palette[name] = QColor(color)
 
     def color(self, i):
-        return self._palette.get(COLOR_CODES.get(i))
+        return self._palette.get(rm.COLOR_CODES.get(i))
 
     def highlight(self, i):
-        return self._palette.get(HIGHLIGHTER_CODES.get(i))
+        return self._palette.get(rm.HIGHLIGHTER_CODES.get(i))
 
     def colorFor(self, tool, i):
-        if HIGHLIGHTER_TOOL == TOOL_ID.get(tool):
+        if rm.HIGHLIGHTER_TOOL == rm.TOOL_ID.get(tool):
             return self.highlight(i)
         return self.color(i)
 
@@ -60,7 +60,7 @@ class Palette:
 
     def opacityBased(self):
         p = Palette(self._palette)
-        for c in HIGHLIGHTER_CODES.values():
+        for c in rm.HIGHLIGHTER_CODES.values():
             p._palette[c].setAlpha(127)
         return p
 

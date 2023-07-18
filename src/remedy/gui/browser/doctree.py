@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QContextMenuEvent, QIcon
+from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QContextMenuEvent, QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
@@ -15,17 +15,21 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-# from remedy.gui.export import webUIExport, exportDocument
-# from remedy.gui.browser.info import InfoPanel
-from remedy.gui.browser.delegates import *
+from remedy.gui.browser.delegates import NoEditDelegate, PinnedDelegate, StatusDelegate
 from remedy.gui.browser.workers import NewEntryCancelled, NewEntryWorker
-from remedy.gui.qmetadata import *
+from remedy.remarkable.metadata import (
+    EPUB,
+    FOLDER,
+    PDF,
+    ROOT_ID,
+    Document,
+    EBook,
+    Entry,
+    Notebook,
+    PDFDoc,
+    TrashBin,
+)
 from remedy.utils import log
-
-# from remedy.gui.thumbnail import ThumbnailWorker
-# import remedy.gui.resources
-# from remedy.gui.notebookview import *
-
 
 DOCTYPE = {PDF: 'pdf', FOLDER: 'folder', EPUB: 'epub'}
 

@@ -1,8 +1,6 @@
 from PyQt5.QtCore import QObject, QRunnable, Qt, pyqtSignal
 from PyQt5.QtGui import QImage, QPainter, QPen
 
-import remedy.remarkable.constants as rm
-from remedy import *
 from remedy.remarkable.render import IGNORE_ERASER, BarePageScene
 from remedy.utils import log
 

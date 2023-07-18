@@ -1,8 +1,6 @@
-import argparse
 import json
 from collections import namedtuple
 from copy import deepcopy
-from pathlib import Path
 
 from remedy.remarkable.constants import TOOL_NAME_ID
 from remedy.utils import deepupdate, log, logging

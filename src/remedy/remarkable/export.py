@@ -4,7 +4,7 @@ from PyQt5.QtCore import QSizeF, QThread, pyqtSignal
 from PyQt5.QtGui import QPainter
 from PyQt5.QtPrintSupport import QPrinter
 
-from remedy import *
+import remedy.remarkable.constants as rm
 
 try:
     from PyPDF2.pdf import PageObject
@@ -14,7 +14,7 @@ except ImportError:
     from PyPDF2.errors import PdfReadError
 
 from remedy.remarkable.metadata import PDFBasedDoc
-from remedy.remarkable.render import BarePageScene, Palette
+from remedy.remarkable.render import BarePageScene
 from remedy.utils import log
 
 
@@ -41,7 +41,7 @@ def scenesPdf(scenes, pages, outputPath, progress=None, tot=0):
     printer.setOutputFormat(QPrinter.PdfFormat)
     # printer.setPageSize(QPrinter.A4)
     printer.setOutputFileName(outputPath)
-    printer.setPaperSize(QSizeF(HEIGHT_MM, WIDTH_MM), QPrinter.Millimeter)
+    printer.setPaperSize(QSizeF(rm.HEIGHT_MM, rm.WIDTH_MM), QPrinter.Millimeter)
     printer.setPageMargins(0, 0, 0, 0, QPrinter.Millimeter)
     printer.setCreator('Remedy')
     p = QPainter()

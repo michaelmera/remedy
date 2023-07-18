@@ -6,6 +6,7 @@ from itertools import groupby
 from PyQt5.QtCore import QPointF, Qt
 from PyQt5.QtGui import (
     QBrush,
+    QColor,
     QImage,
     QPainter,
     QPainterPath,
@@ -23,7 +24,7 @@ from PyQt5.QtWidgets import (
 )
 
 import remedy.remarkable.constants as rm
-from remedy.remarkable.palette import *
+from remedy.remarkable.palette import Palette
 from remedy.utils import log
 
 QUICK_ERASER = 0

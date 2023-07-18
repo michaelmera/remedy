@@ -36,8 +36,8 @@ from PyQt5.QtWidgets import (
 )
 
 import remedy.remarkable.constants as rm
-from remedy import *
 from remedy.gui.export import exportDocument
+from remedy.remarkable.metadata import Page
 from remedy.remarkable.render import PageGraphicsItem
 from remedy.utils import log
 
@@ -137,9 +137,9 @@ class NotebookView(QGraphicsView):
         self.show()
         if document.orientation == 'landscape':
             self.rotateCW()
-            self.resetSize.emit(WIDTH / HEIGHT)
+            self.resetSize.emit(rm.WIDTH / rm.HEIGHT)
         else:
-            self.resetSize.emit(HEIGHT / WIDTH)
+            self.resetSize.emit(rm.HEIGHT / rm.WIDTH)
 
     def _connectActions(self):
         a = self.actions

@@ -1,9 +1,8 @@
-import time
 from threading import RLock
 
 from PyQt5.QtGui import QImage
 
-from remedy.remarkable.constants import *
+import remedy.remarkable.constants as rm
 from remedy.utils import log
 
 NO_RENDERER = 0
@@ -108,9 +107,9 @@ if RENDERER == MUPDF:
                     sz = page.mediabox
                     w, h = sz.width, sz.height
                     if w <= h:
-                        ratio = min(WIDTH / w, HEIGHT / h) / 72
+                        ratio = min(rm.WIDTH / w, rm.HEIGHT / h) / 72
                     else:
-                        ratio = min(HEIGHT / w, WIDTH / h) / 72
+                        ratio = min(rm.HEIGHT / w, rm.WIDTH / h) / 72
                     m = fitz.Matrix(scale * ratio, scale * ratio)
                     if w > h:
                         m.prerotate(270)
@@ -169,9 +168,9 @@ elif RENDERER == POPPLER:
                         sz = page.pageSize()
                         w, h = sz.width(), sz.height()
                         if w <= h:
-                            ratio = min(WIDTH / w, HEIGHT / h)
+                            ratio = min(rm.WIDTH / w, rm.HEIGHT / h)
                         else:
-                            ratio = min(HEIGHT / w, WIDTH / h)
+                            ratio = min(rm.HEIGHT / w, rm.WIDTH / h)
                         xres = scale * ratio
                         yres = scale * ratio
                         if w <= h:

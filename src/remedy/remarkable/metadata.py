@@ -4,19 +4,16 @@ import json
 import uuid
 from collections import namedtuple
 from copy import deepcopy
-from itertools import *
 from os import stat
 from pathlib import Path
 from threading import RLock
 
 import arrow
 
-from remedy.remarkable.constants import *
-from remedy.remarkable.lines import *
+from remedy.remarkable.lines import Layer, readLines
 from remedy.remarkable.pdfbase import PDFBase
 from remedy.utils import deepupdate, log
 
-# DocIndex = namedtuple('DocIndex', 'metadata tree trash')
 FolderNode = namedtuple('FolderNode', 'folders files')
 
 FOLDER_TYPE = 'CollectionType'

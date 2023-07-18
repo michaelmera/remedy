@@ -14,9 +14,18 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-import remedy.gui.resources
-from remedy.gui.qmetadata import *
 from remedy.gui.thumbnail import ThumbnailWorker
+from remedy.remarkable.metadata import (
+    Document,
+    EBook,
+    Entry,
+    Folder,
+    Notebook,
+    PDFBasedDoc,
+    PDFDoc,
+    RootFolder,
+    TrashBin,
+)
 from remedy.utils import log
 
 THUMB_HEIGHT = 150

@@ -1,14 +1,9 @@
-# from PyQt5.QtGui import *
 import os
 import socket
-import struct
-import sys
-import time
 from binascii import hexlify
 
 import paramiko
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QInputDialog, QLineEdit
 
 from remedy.utils import log
 
