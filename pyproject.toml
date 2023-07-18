@@ -1,6 +1,61 @@
 [build-system]
-requires = ["setuptools", "wheel", "PyQt5"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "Remedy"
+dynamic = ["version"]
+description = "Remedy, a reMarkable tablet manager app"
+readme = "README.md"
+license = "GPL-3.0-only"
+requires-python = ">=3.10"
+authors = [
+    { name = "Michael Mera", email = "dev@michaelmera.com" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "arrow",
+    "paramiko",
+    "PyPDF2<=1.28.4",
+    "pyqt5",
+    "requests",
+    "sip",
+]
+
+[project.optional-dependencies]
+default = [
+    "pymupdf",
+]
+mupdf = [
+    "pymupdf",
+]
+poppler = [
+    "python-poppler-qt5",
+]
+simpl = [
+    "simplification",
+]
+
+[project.scripts]
+remedy = "remedy.gui.app:main"
+
+[project.urls]
+Homepage = "https://github.com/michaelmera/remedy"
+
+[tool.hatch.version]
+path = "remedy/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/remedy",
+    "/assets",
+]
 
 [tool.black]
 target-version = ['py310','py311']
