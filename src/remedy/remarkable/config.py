@@ -1,19 +1,13 @@
-import json
-from copy import deepcopy
-
 import argparse
+import json
+from collections import namedtuple
+from copy import deepcopy
 from pathlib import Path
 
-from collections import namedtuple
-
-from remedy.utils import log, logging
-
-
-from remedy.utils import deepupdate
-
 from remedy.remarkable.constants import TOOL_NAME_ID
+from remedy.utils import deepupdate, log, logging
 
-AppPaths = namedtuple("AppPaths", ["config_dir", "config", "known_hosts", "cache_dir"])
+AppPaths = namedtuple('AppPaths', ['config_dir', 'config', 'known_hosts', 'cache_dir'])
 noPaths = AppPaths(None, None, None, None)
 
 
@@ -22,53 +16,53 @@ class RemedyConfigException(Exception):
 
 
 OPTIONS_DEFAULTS = {
-    "default_source": False,
-    "sources": {},
-    "log_verbosity": "info",
-    "export": {
-        "default_dir": "",
-        "eraser_mode": "ignore",
-        "open_exported": True,
-        "include_base_layer": True,
-        "orientation": "auto",
-        "smoothen": False,
-        "simplify": 0,
-        "pencil_resolution": 0.4,  # Alas QPrinter ignores QBrush's transforms
+    'default_source': False,
+    'sources': {},
+    'log_verbosity': 'info',
+    'export': {
+        'default_dir': '',
+        'eraser_mode': 'ignore',
+        'open_exported': True,
+        'include_base_layer': True,
+        'orientation': 'auto',
+        'smoothen': False,
+        'simplify': 0,
+        'pencil_resolution': 0.4,  # Alas QPrinter ignores QBrush's transforms
     },
-    "preview": {"eraser_mode": "ignore", "pencil_resolution": 0.4},
-    "upload": {"default_options": {}},
-    "palettes": {"default": {}},
-    "mathpix": {
-        "include_base_layer": False,
-        "pencil_resolution": -1,
-        "scale": 1,
-        "simplify": 0,
-        "smoothen": False,
-        "eraser_mode": "ignore",
-        "exclude_tools": ["brush", "pencil", "highlighter", "eraser", "erase_area"],
+    'preview': {'eraser_mode': 'ignore', 'pencil_resolution': 0.4},
+    'upload': {'default_options': {}},
+    'palettes': {'default': {}},
+    'mathpix': {
+        'include_base_layer': False,
+        'pencil_resolution': -1,
+        'scale': 1,
+        'simplify': 0,
+        'smoothen': False,
+        'eraser_mode': 'ignore',
+        'exclude_tools': ['brush', 'pencil', 'highlighter', 'eraser', 'erase_area'],
     },
 }
 
 
 SOURCE_DEFAULTS = {
-    "name": "reMarkable",
-    "hidden": False,
-    "type": "ssh",
-    "host": "10.11.99.1",
-    "username": "root",
-    "host_key_policy": "ask",
-    "timeout": 3,
-    "use_banner": False,
-    "enable_webui_export": False,
+    'name': 'reMarkable',
+    'hidden': False,
+    'type': 'ssh',
+    'host': '10.11.99.1',
+    'username': 'root',
+    'host_key_policy': 'ask',
+    'timeout': 3,
+    'use_banner': False,
+    'enable_webui_export': False,
 }
 
 VERBOSITY = {
-    "critical": logging.CRITICAL,
-    "error": logging.ERROR,
-    "warning": logging.WARNING,
-    "info": logging.INFO,
-    "debug": logging.DEBUG,
-    "none": logging.CRITICAL + 1,
+    'critical': logging.CRITICAL,
+    'error': logging.ERROR,
+    'warning': logging.WARNING,
+    'info': logging.INFO,
+    'debug': logging.DEBUG,
+    'none': logging.CRITICAL + 1,
 }
 
 
@@ -122,19 +116,19 @@ class RemedyConfig:
         return self._curr_source
 
     def selectSource(self, source):
-        c = self.get("sources")
+        c = self.get('sources')
         if len(c) == 0:
-            raise RemedyConfigException("No sources specified in configuration.")
+            raise RemedyConfigException('No sources specified in configuration.')
         if source not in c:
             raise RemedyConfigException(
                 "Source '%s' not found in configuration." % source
             )
         s = c.get(source)
-        deepupdate(self._config, s.pop("settings", {}))
+        deepupdate(self._config, s.pop('settings', {}))
         c = deepcopy(SOURCE_DEFAULTS)
         deepupdate(c, s)
-        c.setdefault("cache_dir", self._paths.cache_dir)
-        c.setdefault("known_hosts", self._paths.known_hosts)
+        c.setdefault('cache_dir', self._paths.cache_dir)
+        c.setdefault('known_hosts', self._paths.known_hosts)
         self._source_config = c
         self._curr_source = source
         self.makeConsistent()
@@ -150,10 +144,10 @@ class RemedyConfig:
 
     def renderOptionsFrom(self, key):
         opt = deepcopy(self.get(key))
-        opt["palette"] = self.palettes.get(opt.get("palette", "default"))
-        opt["exclude_tools"] = {
+        opt['palette'] = self.palettes.get(opt.get('palette', 'default'))
+        opt['exclude_tools'] = {
             TOOL_NAME_ID.get(t)
-            for t in opt.get("exclude_tools", [])
+            for t in opt.get('exclude_tools', [])
             if t in TOOL_NAME_ID
         }
         return opt
@@ -164,55 +158,55 @@ class RemedyConfig:
             # All this so that if you do not request palettes you don't depend on PyQt
             from remedy.remarkable.palette import PalettePresets
 
-            self._palettes = PalettePresets(self.get("palettes", {}))
+            self._palettes = PalettePresets(self.get('palettes', {}))
         return self._palettes
 
     @property
     def export(self):
-        return self.renderOptionsFrom("export")
+        return self.renderOptionsFrom('export')
 
     @property
     def mathpix(self):
-        return self.renderOptionsFrom("mathpix")
+        return self.renderOptionsFrom('mathpix')
 
     def upload(self, ext=None):
-        upload = self.get("upload")
-        opt = deepcopy(upload.get("default_options"))
+        upload = self.get('upload')
+        opt = deepcopy(upload.get('default_options'))
         if isinstance(ext, str):
-            ext = ext.lstrip(".").lower()
-            deepupdate(opt, upload.get(ext + "_options", {}))
+            ext = ext.lstrip('.').lower()
+            deepupdate(opt, upload.get(ext + '_options', {}))
         return opt
 
     @property
     def preview(self):
-        return deepcopy(self.get("preview"))
+        return deepcopy(self.get('preview'))
 
     def set(self, opt, v):
         self._config[opt] = v
 
     def logLevel(self):
-        return VERBOSITY.get(self._config["log_verbosity"], logging.INFO)
+        return VERBOSITY.get(self._config['log_verbosity'], logging.INFO)
 
     def connectionArgs(self, **overrides):
         c = deepcopy(self._source_config)
         src = self.selectedSource()
         if src:
-            c["id"] = src
+            c['id'] = src
         c.update(overrides)
-        t = c.pop("type")
+        t = c.pop('type')
         return (t, c)
 
     def makeConsistent(self):
         s = self._source_config
-        if s and s.get("use_banner") and s.get("enable_webui_export"):
-            s["use_banner"] = False
+        if s and s.get('use_banner') and s.get('enable_webui_export'):
+            s['use_banner'] = False
             log.warning(
-                "The `use_banner` setting is incompatible with `enable_webui_export`: the latter is overriding the former."
+                'The `use_banner` setting is incompatible with `enable_webui_export`: the latter is overriding the former.'
             )
 
     def dump(self, f, with_defaults=True):
         conf = self._config
-        if with_defaults and len(conf["sources"]) == 0:
+        if with_defaults and len(conf['sources']) == 0:
             conf = deepcopy(conf)
-            conf["sources"] = {"default": SOURCE_DEFAULTS}
+            conf['sources'] = {'default': SOURCE_DEFAULTS}
         json.dump(conf, f, indent=4)

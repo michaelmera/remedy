@@ -1,40 +1,38 @@
+from pathlib import Path
+
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QContextMenuEvent, QIcon
 from PyQt5.QtWidgets import (
-    QTreeWidgetItem,
-    QTreeWidget,
-    QWidget,
     QHBoxLayout,
+    QHeaderView,
     QLabel,
+    QMessageBox,
     QProgressBar,
     QPushButton,
-    QMessageBox,
-    QHeaderView,
     QTreeView,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QWidget,
 )
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QTimer
 
+# from remedy.gui.export import webUIExport, exportDocument
+# from remedy.gui.browser.info import InfoPanel
+from remedy.gui.browser.delegates import *
+from remedy.gui.browser.workers import NewEntryCancelled, NewEntryWorker
 from remedy.gui.qmetadata import *
+from remedy.utils import log
 
 # from remedy.gui.thumbnail import ThumbnailWorker
 # import remedy.gui.resources
 # from remedy.gui.notebookview import *
 
-from remedy.utils import log
 
-# from remedy.gui.export import webUIExport, exportDocument
-# from remedy.gui.browser.info import InfoPanel
-from remedy.gui.browser.delegates import *
-from remedy.gui.browser.workers import NewEntryWorker, NewEntryCancelled
-
-from pathlib import Path
-
-
-DOCTYPE = {PDF: "pdf", FOLDER: "folder", EPUB: "epub"}
+DOCTYPE = {PDF: 'pdf', FOLDER: 'folder', EPUB: 'epub'}
 
 
 def doctype_sortcode(t):
-    t = t[0].upper() if t else "Z"
-    t = "Q" if t == "E" else t
+    t = t[0].upper() if t else 'Z'
+    t = 'Q' if t == 'E' else t
     return t
 
 
@@ -51,7 +49,7 @@ class UploadingItem(QWidget):
         layout.addWidget(self.label)
         layout.addWidget(self.progress)
         if cancel:
-            self.cancelBtn = QPushButton("Cancel")
+            self.cancelBtn = QPushButton('Cancel')
             if tree:
                 self.cancelBtn.setMinimumWidth(tree.columnWidth(3))
             layout.addWidget(self.cancelBtn)
@@ -73,11 +71,11 @@ class ErrorItem(QWidget):
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
         )
         self.message.linkActivated.connect(self.showMsg)
-        bla = QLabel("Bla")
+        bla = QLabel('Bla')
         layout.addWidget(self.label)
         layout.addSpacing(10)
         layout.addWidget(self.message, 2)
-        self.dismissBtn = QPushButton("Dismiss")
+        self.dismissBtn = QPushButton('Dismiss')
         if tree:
             self.dismissBtn.setMinimumWidth(tree.columnWidth(3))
         layout.addWidget(self.dismissBtn)
@@ -85,7 +83,7 @@ class ErrorItem(QWidget):
     @pyqtSlot(str)
     def showMsg(self, href):
         QMessageBox.critical(
-            self.window(), "Error", "Something went wrong:\n\n" + self.msg
+            self.window(), 'Error', 'Something went wrong:\n\n' + self.msg
         )
 
 
@@ -111,7 +109,7 @@ class DocTreeItem(QTreeWidgetItem):
         self._entry = None
         self.setFlags(Qt.ItemFlag.NoItemFlags)
         self.setFirstColumnSpanned(True)
-        title = metadata.get("visibleName", path.stem if path else "Untitled")
+        title = metadata.get('visibleName', path.stem if path else 'Untitled')
         doctype = DOCTYPE.get(etype)
         self.uploadingWidget = UploadingItem(title, cancel, tree=self.treeWidget())
         if self.treeWidget():
@@ -132,35 +130,35 @@ class DocTreeItem(QTreeWidgetItem):
             self.uploadingWidget.progress.setValue(x)
 
     def warning(self, msg):
-        self._messages.append(("warning", msg))
+        self._messages.append(('warning', msg))
         self.idle()
 
     def error(self, msg):
-        self._messages.append(("error", msg))
+        self._messages.append(('error', msg))
         self.idle()
 
     def info(self, msg):
-        self._messages.append(("info", msg))
+        self._messages.append(('info', msg))
         self.idle()
 
     def idle(self):
         if self._messages:
             self.setText(4, self._messages[-1][0])
-            self.setData(4, Qt.ItemDataRole.ToolTipRole, "Click for more info")
+            self.setData(4, Qt.ItemDataRole.ToolTipRole, 'Click for more info')
         else:
-            self.setText(4, "")
-            self.setData(4, Qt.ItemDataRole.ToolTipRole, "Up to date")
+            self.setText(4, '')
+            self.setData(4, Qt.ItemDataRole.ToolTipRole, 'Up to date')
 
     def updating(self):
-        self.setText(4, "updating")
+        self.setText(4, 'updating')
 
     def showMessages(self):
-        msg = ""
+        msg = ''
         for m in self._messages:
-            msg += "\n" + m[0].upper() + ": " + m[1]
-        log.debug("MSG: %s", msg)
+            msg += '\n' + m[0].upper() + ': ' + m[1]
+        log.debug('MSG: %s', msg)
         if msg:
-            QMessageBox.information(self.treeWidget().window(), "Log", msg)
+            QMessageBox.information(self.treeWidget().window(), 'Log', msg)
         self._messages.clear()
         self.idle()
 
@@ -168,7 +166,7 @@ class DocTreeItem(QTreeWidgetItem):
         self._entry = None
         self.setFlags(Qt.ItemFlag.NoItemFlags)
         self.setFirstColumnSpanned(True)
-        title = metadata.get("visibleName", path.stem if path else "Unnamed")
+        title = metadata.get('visibleName', path.stem if path else 'Unnamed')
         doctype = DOCTYPE.get(etype)
         self.uploadingWidget = ErrorItem(title, str(exception), tree=self.treeWidget())
         # self.uploadingWidget.dismissBtn.clicked.connect()
@@ -201,7 +199,7 @@ class DocTreeItem(QTreeWidgetItem):
         icon = self.treeWidget()._icon
         self.setData(0, Qt.ItemDataRole.UserRole, entry.uid)
         flags = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
-        self.setText(5, ",".join(entry.allTags()))
+        self.setText(5, ','.join(entry.allTags()))
         # commented flag settings should be uncommented once move is implemented
         if isinstance(entry, Document):
             flags |= Qt.ItemFlag.ItemNeverHasChildren  # | Qt.ItemFlag.ItemIsDragEnabled
@@ -209,38 +207,38 @@ class DocTreeItem(QTreeWidgetItem):
                 flags |= Qt.ItemFlag.ItemIsEditable
             self.setText(0, entry.visibleName)
             if isinstance(entry, Notebook):
-                self.setIcon(0, icon["notebook"])
-                self.setText(3, "Notebook")
+                self.setIcon(0, icon['notebook'])
+                self.setText(3, 'Notebook')
             elif isinstance(entry, PDFDoc):
-                self.setIcon(0, icon["pdf"])
-                self.setText(3, "PDF")
+                self.setIcon(0, icon['pdf'])
+                self.setText(3, 'PDF')
             elif isinstance(entry, EBook):
-                self.setIcon(0, icon["epub"])
-                self.setText(3, "EBook")
+                self.setIcon(0, icon['epub'])
+                self.setText(3, 'EBook')
             self.setText(1, entry.updatedOn())
-            self.setText(2, "1" if entry.pinned else "")
+            self.setText(2, '1' if entry.pinned else '')
             if entry.shouldHaveBaseDocument() and not entry.hasBaseDocument():
                 self.warning(
-                    "You will need to open this document on the tablet "
-                    "before being able to properly preview its contents in Remedy."
+                    'You will need to open this document on the tablet '
+                    'before being able to properly preview its contents in Remedy.'
                 )
         elif isinstance(entry, TrashBin):
             flags = Qt.ItemFlag.ItemIsEnabled
             # flags |= Qt.ItemFlag.ItemIsDropEnabled
             self.setText(0, entry.visibleName)
-            self.setIcon(0, icon["trash"])
-            self.setText(3, "Trash Bin")
-            self.setText(2, "")
+            self.setIcon(0, icon['trash'])
+            self.setText(3, 'Trash Bin')
+            self.setText(2, '')
         else:
             # flags |= Qt.ItemFlag.ItemIsDropEnabled | Qt.ItemFlag.ItemIsDragEnabled
             flags |= Qt.ItemFlag.ItemIsDropEnabled
             if not entry.index.isReadOnly() and not entry.isDeleted():
                 flags |= Qt.ItemFlag.ItemIsEditable
             self.setText(0, entry.visibleName)
-            self.setIcon(0, icon["folder"])
+            self.setIcon(0, icon['folder'])
             # self.setText(1, entry.updatedOn()) # not very useful (unrelated to contents)
-            self.setText(3, "Folder")
-            self.setText(2, "1" if entry.pinned else "")
+            self.setText(3, 'Folder')
+            self.setText(2, '1' if entry.pinned else '')
         self.setFlags(flags)
         self._sortdata = doctype_sortcode(self.text(3)) + self.text(0)
 
@@ -281,7 +279,7 @@ class DocTree(QTreeWidget):
         self.setMinimumWidth(400)
         self.setIconSize(QSize(24, 24))
         # self.setColumnCount(4)
-        self.setHeaderLabels(["Name", "Updated", "", "Type", "", "Tags"])
+        self.setHeaderLabels(['Name', 'Updated', '', 'Type', '', 'Tags'])
         self.setUniformRowHeights(False)
         self.header().setStretchLastSection(False)
         self.header().setSectionResizeMode(0, QHeaderView.Stretch)
@@ -314,11 +312,11 @@ class DocTree(QTreeWidget):
         self.index = index
 
         self._icon = {
-            "trash": QIcon(QPixmap(":assets/24/trash.svg")),
-            "folder": QIcon(QPixmap(":assets/24/folder.svg")),
-            "pdf": QIcon(QPixmap(":assets/24/pdf.svg")),
-            "epub": QIcon(QPixmap(":assets/24/epub.svg")),
-            "notebook": QIcon(QPixmap(":assets/24/notebook.svg")),
+            'trash': QIcon(QPixmap(':assets/24/trash.svg')),
+            'folder': QIcon(QPixmap(':assets/24/folder.svg')),
+            'pdf': QIcon(QPixmap(':assets/24/pdf.svg')),
+            'epub': QIcon(QPixmap(':assets/24/epub.svg')),
+            'notebook': QIcon(QPixmap(':assets/24/notebook.svg')),
         }
 
         nodes = self._nodes = {}
@@ -343,12 +341,12 @@ class DocTree(QTreeWidget):
                     d = index.get(d)
                     c = nodes[d.uid] = DocTreeItem(d, p)
                     if d.deleted:
-                        c.warning("Item deleted from trash but still on disk")
+                        c.warning('Item deleted from trash but still on disk')
                 for d in f.folders:
                     d = index.get(d)
                     c = nodes[d.uid] = DocTreeItem(d, p)
                     if d.deleted:
-                        c.warning("Item deleted from trash but still on disk")
+                        c.warning('Item deleted from trash but still on disk')
 
         self.sortItems(0, Qt.SortOrder.AscendingOrder)
         self.resizeColumnToContents(2)
@@ -396,7 +394,7 @@ class DocTree(QTreeWidget):
     @pyqtSlot(str, int, dict, Path)
     def newEntryPrepare(self, uid, etype, meta, path):
         op = NewEntryWorker.getWorkerFor(uid)
-        item = self.itemOf(meta.get("parent", ROOT_ID))
+        item = self.itemOf(meta.get('parent', ROOT_ID))
         i = DocTreeItem(
             uid=uid,
             etype=etype,
@@ -425,7 +423,7 @@ class DocTree(QTreeWidget):
 
     @pyqtSlot(Exception, str, int, dict, Path)
     def newEntryError(self, exception, uid, etype, meta, path=None):
-        log.debug("New entry error: %s", exception)
+        log.debug('New entry error: %s', exception)
         if isinstance(exception, NewEntryCancelled):
             self._removePending(uid)
         else:
@@ -446,7 +444,7 @@ class DocTree(QTreeWidget):
         if item:
             entry = self.index.get(uid)
             item.setEntry(entry)
-            if "parent" in new_meta:
+            if 'parent' in new_meta:
                 p = self._nodes.get(entry.parent)
                 pi = item.parent()
                 if pi is None:
@@ -457,9 +455,9 @@ class DocTree(QTreeWidget):
                     p.addChild(item)
                 else:
                     item.warning(
-                        "Could not move to new parent folder. Try restarting Remedy."
+                        'Could not move to new parent folder. Try restarting Remedy.'
                     )
-                    log.error("Something went wrong in reparenting item")
+                    log.error('Something went wrong in reparenting item')
             item.idle()
             self.itemSelectionChanged.emit()
 
@@ -469,7 +467,7 @@ class DocTree(QTreeWidget):
         if item:
             item.setEntry(self.index.get(uid))
             msg = str(exception) or exception.__class__.__name__
-            item.error("Failed to update item: %s" % msg)
+            item.error('Failed to update item: %s' % msg)
             self.itemSelectionChanged.emit()
 
     @pyqtSlot(QTreeWidgetItem, int)
@@ -515,7 +513,7 @@ class DocTree(QTreeWidget):
         return False
 
     def mimeTypes(self):
-        return ["text/uri-list"]
+        return ['text/uri-list']
 
     def supportedDropActions(self):
         return Qt.DropAction.CopyAction
@@ -532,7 +530,7 @@ class DocTree(QTreeWidget):
             filename = url.toLocalFile()
             if filename:
                 p = Path(filename)
-                if p.suffix.lower() in [".pdf", ".epub"]:
+                if p.suffix.lower() in ['.pdf', '.epub']:
                     paths.append(p)
                 else:
                     return None

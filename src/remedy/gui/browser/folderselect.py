@@ -1,13 +1,13 @@
 from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QDialog,
+    QDialogButtonBox,
+    QLabel,
     QTreeWidget,
     QTreeWidgetItem,
-    QDialogButtonBox,
     QVBoxLayout,
-    QLabel,
 )
-from PyQt5.QtGui import QIcon, QPixmap
 
 
 class FolderSelectDialog(QDialog):
@@ -22,12 +22,12 @@ class FolderSelectDialog(QDialog):
 
     def __init__(self, index, uid=None, exclude=set(), **kwargs):
         super().__init__(**kwargs)
-        self._icon = QIcon(QPixmap(":assets/24/folder.svg"))
+        self._icon = QIcon(QPixmap(':assets/24/folder.svg'))
         tree = self.tree = QTreeWidget()
         # tree.setMinimumWidth(400)
         tree.setIconSize(QSize(24, 24))
         # tree.setColumnCount(4)
-        tree.setHeaderLabels(["Name"])
+        tree.setHeaderLabels(['Name'])
         # tree.setUniformRowHeights(False)
         # tree.header().setStretchLastSection(False)
         # tree.header().setSectionResizeMode(0, QHeaderView.Stretch)
@@ -65,10 +65,10 @@ class FolderSelectDialog(QDialog):
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 13, 0, 0)
-        layout.addWidget(QLabel("Select a destination folder:"))
+        layout.addWidget(QLabel('Select a destination folder:'))
         layout.addWidget(tree)
         layout.addWidget(buttonBox)
-        self.setWindowTitle("Destination folder")
+        self.setWindowTitle('Destination folder')
         self.setLayout(layout)
 
     def selectedFolder(self):

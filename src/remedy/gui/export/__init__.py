@@ -1,14 +1,12 @@
-from remedy import *
-
-from PyQt5.QtCore import pyqtSlot, QObject, pyqtSignal, QUrl
-from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QProgressDialog, QMessageBox, QApplication, QFileDialog
-
-from remedy.remarkable.export import Exporter, CancelledExporter
-from remedy.gui.export.options import ExportDialog
-
 from os import path
 
+from PyQt5.QtCore import QObject, QUrl, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox, QProgressDialog
+
+from remedy import *
+from remedy.gui.export.options import ExportDialog
+from remedy.remarkable.export import CancelledExporter, Exporter
 from remedy.utils import log
 
 
@@ -19,8 +17,8 @@ class ExportOperation(QObject):
     def run(self, filename, document, **kwargs):
         self.name = path.basename(filename)
         self.dialog = QProgressDialog(parent=self.parent())
-        self.dialog.setWindowTitle("Exporting %s" % self.name)
-        self.dialog.setLabelText("Initialising...")
+        self.dialog.setWindowTitle('Exporting %s' % self.name)
+        self.dialog.setLabelText('Initialising...')
         self.dialog.setMinimumDuration(500)
         self.dialog.setAutoClose(True)
         exporter = Exporter(filename, document, **kwargs, parent=self)
@@ -38,8 +36,8 @@ class ExportOperation(QObject):
         if not isinstance(e, CancelledExporter):
             QMessageBox.critical(
                 self.parent(),
-                "Error",
-                "Something went wrong while exporting.\n\n" + str(e),
+                'Error',
+                'Something went wrong while exporting.\n\n' + str(e),
             )
 
     @pyqtSlot(int)
@@ -48,7 +46,7 @@ class ExportOperation(QObject):
 
     @pyqtSlot(str)
     def onNewPhase(self, s):
-        self.dialog.setLabelText(f"Exporting {self.name}:\n{s}...")
+        self.dialog.setLabelText(f'Exporting {self.name}:\n{s}...')
 
     @pyqtSlot()
     def onProgress(self):
@@ -64,22 +62,22 @@ class ExportOperation(QObject):
 class WebUIExport(QObject):
     # TODO make asynchronous + progress dialog
 
-    def run(self, filename, uid, webUIUrl="10.11.99.1"):
+    def run(self, filename, uid, webUIUrl='10.11.99.1'):
         import requests
 
         # Credit: https://github.com/LinusCDE/rmWebUiTools
         response = requests.get(
-            "http://{webUIUrl}/download/{uid}/placeholder".format(
+            'http://{webUIUrl}/download/{uid}/placeholder'.format(
                 webUIUrl=webUIUrl, uid=uid
             ),
             stream=True,
         )
 
         if not response.ok:
-            raise Exception("Download from WebUI failed")
+            raise Exception('Download from WebUI failed')
 
         response.raw.decode_content = True  # Decompress if needed
-        with open(filename, "wb") as out:
+        with open(filename, 'wb') as out:
             for chunk in response.iter_content(8192):
                 out.write(chunk)
 
@@ -88,18 +86,18 @@ def exportDocument(doc, parent=None):
     ok = True
     opt = QApplication.instance().config.export
     filename = doc.visibleName
-    if not filename.endswith(".pdf"):
-        filename += ".pdf"
-    filename = path.join(opt.get("default_dir", ""), filename)
+    if not filename.endswith('.pdf'):
+        filename += '.pdf'
+    filename = path.join(opt.get('default_dir', ''), filename)
     # filename, ok = QFileDialog.getSaveFileName(parent, "Export PDF...", filename)
     filename, whichPages, opt, ok = ExportDialog.getFileExportOptions(
         filename=filename, options=opt, parent=parent
     )
     if ok:
         op = ExportOperation(parent=parent)
-        if opt.pop("open_exported", True):
+        if opt.pop('open_exported', True):
             op.success.connect(
-                lambda: QDesktopServices.openUrl(QUrl("file://" + filename))
+                lambda: QDesktopServices.openUrl(QUrl('file://' + filename))
             )
         op.run(filename, doc, whichPages=whichPages, **opt)
         return op
@@ -111,21 +109,21 @@ def webUIExport(doc, filename=None, parent=None):
     opt = QApplication.instance().config.export
     if filename is None:
         filename = doc.visibleName
-        if not filename.endswith(".pdf"):
-            filename += ".pdf"
-        filename = path.join(opt.get("default_dir", ""), filename)
-        filename, ok = QFileDialog.getSaveFileName(parent, "Export PDF...", filename)
+        if not filename.endswith('.pdf'):
+            filename += '.pdf'
+        filename = path.join(opt.get('default_dir', ''), filename)
+        filename, ok = QFileDialog.getSaveFileName(parent, 'Export PDF...', filename)
     if ok and filename:
         try:
             op = WebUIExport(parent=parent)
             op.run(filename, doc.uid)
-            if opt.pop("open_exported", True):
-                QDesktopServices.openUrl(QUrl("file://" + filename))
+            if opt.pop('open_exported', True):
+                QDesktopServices.openUrl(QUrl('file://' + filename))
             return True
         except:
             QMessageBox.critical(
                 parent,
-                "Error",
-                "Could not download PDF from WebUI.\nThis feature only works with USB connections.",
+                'Error',
+                'Could not download PDF from WebUI.\nThis feature only works with USB connections.',
             )
     return False

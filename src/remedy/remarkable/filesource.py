@@ -1,13 +1,14 @@
-import paramiko
-import os
-import shutil
-import os.path as path
 import json
-from stat import S_ISREG, S_ISDIR
+import os
+import os.path as path
+import shutil
 import subprocess
-from shutil import which
 from pathlib import PurePosixPath
+from shutil import which
+from stat import S_ISDIR, S_ISREG
 from threading import RLock
+
+import paramiko
 
 from remedy.utils import log
 
@@ -24,7 +25,7 @@ class FileSource:
             with open(fname) as f:
                 return json.load(f)
         except Exception as e:
-            return dict()
+            return {}
 
     def isReadOnly(self):
         """Don't try uploading if it is readOnly!"""
@@ -77,17 +78,17 @@ class FileSource:
     def listItems(self):
         raise NotImplementedError
 
-    def listSubItems(self, uid, ext="rm"):
+    def listSubItems(self, uid, ext='rm'):
         raise NotImplementedError
 
     def _selectTemplate(self, name, preferVector=False):
-        if "png" in self.templates[name]:
-            if "svg" in self.templates[name]:
+        if 'png' in self.templates[name]:
+            if 'svg' in self.templates[name]:
                 if preferVector:
-                    return self.templates[name]["svg"]
-            return self.templates[name]["png"]
+                    return self.templates[name]['svg']
+            return self.templates[name]['png']
         else:
-            return self.templates[name]["svg"]
+            return self.templates[name]['svg']
 
 
 class LocalFileSource(FileSource):
@@ -101,24 +102,24 @@ class LocalFileSource(FileSource):
             self.templatesRoot = templatesRoot = path.expanduser(templatesRoot)
             self.templates = {}
             with open(
-                path.join(templatesRoot, "templates.json"), encoding="utf-8"
+                path.join(templatesRoot, 'templates.json'), encoding='utf-8'
             ) as f:
                 idx = json.load(f)
-            for t in idx["templates"]:
-                name = t["filename"]  # "name" is just for display, not for lookup!!!
-                fname = path.join(templatesRoot, t["filename"])
+            for t in idx['templates']:
+                name = t['filename']  # "name" is just for display, not for lookup!!!
+                fname = path.join(templatesRoot, t['filename'])
                 self.templates[name] = {}
-                if path.isfile(fname + ".svg"):
-                    self.templates[name]["svg"] = t["filename"] + ".svg"
-                if path.isfile(fname + ".png"):
-                    self.templates[name]["png"] = t["filename"] + ".png"
+                if path.isfile(fname + '.svg'):
+                    self.templates[name]['svg'] = t['filename'] + '.svg'
+                if path.isfile(fname + '.png'):
+                    self.templates[name]['png'] = t['filename'] + '.png'
 
     def isReadOnly(self):
         return True
 
     def retrieve(self, *filename, ext=None, progress=None, force=False):
         if ext:
-            filename = filename[:-1] + (filename[-1] + "." + ext,)
+            filename = filename[:-1] + (filename[-1] + '.' + ext,)
         return path.join(self.root, *filename)
 
     def retrieveTemplate(self, name, progress=None, force=False, preferVector=False):
@@ -138,7 +139,7 @@ class LocalFileSource(FileSource):
 
     def exists(self, *filename, ext=None):
         if ext:
-            filename = filename[:-1] + (filename[-1] + "." + ext,)
+            filename = filename[:-1] + (filename[-1] + '.' + ext,)
         return path.isfile(path.join(self.root, *filename))
 
     def cleanup(self):
@@ -149,13 +150,13 @@ class LocalFileSource(FileSource):
             for entry in entries:
                 if entry.is_file():
                     name = path.splitext(entry.name)
-                    if name[1] == ".metadata":
+                    if name[1] == '.metadata':
                         yield name[0]
 
-    def listSubItems(self, uid, ext=".rm"):
+    def listSubItems(self, uid, ext='.rm'):
         folder = path.join(self.root, uid)
-        if not ext.startswith("."):
-            ext = "." + ext
+        if not ext.startswith('.'):
+            ext = '.' + ext
         if path.isdir(folder):
             with os.scandir(folder) as entries:
                 for entry in entries:
@@ -171,8 +172,8 @@ TEMPLDIR = 1
 
 class LiveFileSourceSSH(FileSource):
     remote_roots = (
-        "/home/root/.local/share/remarkable/xochitl",
-        "/usr/share/remarkable/templates",
+        '/home/root/.local/share/remarkable/xochitl',
+        '/usr/share/remarkable/templates',
     )
 
     _allUids = None
@@ -182,15 +183,15 @@ class LiveFileSourceSSH(FileSource):
     def __init__(
         self,
         ssh,
-        id="",
-        name="SSH",
+        id='',
+        name='SSH',
         cache_dir=None,
         username=None,
         remote_documents=None,
         remote_templates=None,
         use_banner=False,
         connect=True,
-        utils_path="$HOME",
+        utils_path='$HOME',
         persist_cache=True,
         **kw,
     ):
@@ -200,15 +201,15 @@ class LiveFileSourceSSH(FileSource):
 
         self.cache_dir = cache_dir = path.join(path.expanduser(cache_dir), id)
         self.local_roots = (
-            path.join(cache_dir, "documents"),
-            path.join(cache_dir, "templates"),
+            path.join(cache_dir, 'documents'),
+            path.join(cache_dir, 'templates'),
         )
         if not persist_cache and path.isdir(cache_dir):
-            log.debug("Clearing cache")
+            log.debug('Clearing cache')
             shutil.rmtree(cache_dir, ignore_errors=True)
         self._makeLocalPaths()
 
-        _, out, _ = self.ssh.exec_command("echo $HOME")
+        _, out, _ = self.ssh.exec_command('echo $HOME')
         out.channel.recv_exit_status()
         if remote_documents:
             self.remote_roots[0] = remote_documents
@@ -217,14 +218,14 @@ class LiveFileSourceSSH(FileSource):
 
         if use_banner:
             self._dirty = True  # force restart of xochitl even when stopping failed
-            _, out, _ = ssh.exec_command("/bin/systemctl stop xochitl")
+            _, out, _ = ssh.exec_command('/bin/systemctl stop xochitl')
             if out.channel.recv_exit_status() == 0:
                 _, out, _ = ssh.exec_command(
                     utils_path + "/remarkable-splash '%s'" % use_banner
                 )
                 out.channel.recv_exit_status()
             else:
-                log.warning("I could not stop xochitl")
+                log.warning('I could not stop xochitl')
 
         self.sftp = ssh.open_sftp()
         self.scp = self.sftp
@@ -235,22 +236,22 @@ class LiveFileSourceSSH(FileSource):
 
         if connect:
             self.scp.get(
-                self._remote("templates.json", branch=TEMPLDIR),
-                self._local("templates.json", branch=TEMPLDIR),
+                self._remote('templates.json', branch=TEMPLDIR),
+                self._local('templates.json', branch=TEMPLDIR),
             )
             with open(
-                self._local("templates.json", branch=TEMPLDIR), encoding="utf-8"
+                self._local('templates.json', branch=TEMPLDIR), encoding='utf-8'
             ) as f:
                 idx = json.load(f)
 
-            for t in idx["templates"]:
-                name = t["filename"]  # "name" is just for display, not for lookup!!!
-                fname = self._remote(t["filename"], branch=TEMPLDIR)
+            for t in idx['templates']:
+                name = t['filename']  # "name" is just for display, not for lookup!!!
+                fname = self._remote(t['filename'], branch=TEMPLDIR)
                 self.templates[name] = {}
-                if self._isfile(fname + ".svg"):
-                    self.templates[name]["svg"] = t["filename"] + ".svg"
-                if self._isfile(fname + ".png"):
-                    self.templates[name]["png"] = t["filename"] + ".png"
+                if self._isfile(fname + '.svg'):
+                    self.templates[name]['svg'] = t['filename'] + '.svg'
+                if self._isfile(fname + '.png'):
+                    self.templates[name]['png'] = t['filename'] + '.png'
 
     def _makeLocalPaths(self):
         for dirname in self.local_roots:
@@ -282,7 +283,7 @@ class LiveFileSourceSSH(FileSource):
 
     def retrieve(self, *filename, ext=None, progress=None, force=False):
         if ext:
-            filename = filename[:-1] + (filename[-1] + "." + ext,)
+            filename = filename[:-1] + (filename[-1] + '.' + ext,)
         cachep = self._local(*filename)
         with self._lock:
             d = path.dirname(cachep)
@@ -330,36 +331,36 @@ class LiveFileSourceSSH(FileSource):
     def prefetchDocument(self, uid, progress=None, force=False):
         with self._lock:
             # self.scp.get(self._remote(uid), self._local(uid), recursive=True)
-            if self._isfile(self._remote(uid + ".pdf")):
-                self.scp.get(self._remote(uid + ".pdf"), self._local(uid))
-            if self._isfile(self._remote(uid + ".epub")):
-                self.scp.get(self._remote(uid + ".epub"), self._local(uid))
+            if self._isfile(self._remote(uid + '.pdf')):
+                self.scp.get(self._remote(uid + '.pdf'), self._local(uid))
+            if self._isfile(self._remote(uid + '.epub')):
+                self.scp.get(self._remote(uid + '.epub'), self._local(uid))
 
     def exists(self, *filename, ext=None):
         if ext:
-            filename = filename[:-1] + (filename[-1] + "." + ext,)
+            filename = filename[:-1] + (filename[-1] + '.' + ext,)
         with self._lock:
             return self._isfile(self._remote(*filename))
 
     def cleanup(self):
         if not self.persist_cache:
-            log.debug("Clearing cache")
+            log.debug('Clearing cache')
             shutil.rmtree(self.cache_dir, ignore_errors=True)
         self.refreshXochitl()
 
     def refreshXochitl(self, force=False):
         if self._dirty or force:
             try:
-                _, out, _ = self.ssh.exec_command("/bin/systemctl restart xochitl")
+                _, out, _ = self.ssh.exec_command('/bin/systemctl restart xochitl')
                 if out.channel.recv_exit_status() == 0:
                     self._dirty = False
             except paramiko.SSHException as e:
                 log.warning(
-                    "Could not restart xochitl."
-                    "This is most probably due to the tablet going to sleep."
-                    "A manual reboot of the tablet is recommended."
+                    'Could not restart xochitl.'
+                    'This is most probably due to the tablet going to sleep.'
+                    'A manual reboot of the tablet is recommended.'
                 )
-                log.debug("SSH Error: %s", e)
+                log.debug('SSH Error: %s', e)
 
     def listItems(self):
         with self._lock:
@@ -367,14 +368,14 @@ class LiveFileSourceSSH(FileSource):
                 self._allUids = []
                 for entry in self.sftp.listdir(self._remote()):
                     name = path.splitext(entry)
-                    if name[1] == ".metadata":
+                    if name[1] == '.metadata':
                         self._allUids.append(name[0])
         return self._allUids
 
-    def listSubItems(self, uid, ext=".rm"):
+    def listSubItems(self, uid, ext='.rm'):
         folder = self._remote(uid)
-        if not ext.startswith("."):
-            ext = "." + ext
+        if not ext.startswith('.'):
+            ext = '.' + ext
         try:
             # I don't want to yield while holding a lock
             items = []
@@ -398,7 +399,7 @@ class LiveFileSourceSSH(FileSource):
     def store(self, content, *remote, progress=None, overwrite=False):
         with self._lock:
             if overwrite or not self._isfile(self._remote(*remote)):
-                with self.sftp.open(self._remote(*remote), "w") as f:
+                with self.sftp.open(self._remote(*remote), 'w') as f:
                     if type(content) is str:
                         f.write(content)
                     else:
@@ -435,25 +436,25 @@ class LiveFileSourceSSH(FileSource):
 
 
 class LiveFileSourceRsync(LiveFileSourceSSH):
-    RSYNC = [which("rsync")]
+    RSYNC = [which('rsync')]
     _updated = {}
 
     def __init__(
         self,
         ssh,
         data_dir,
-        name="Rsync",
-        username="root",
-        host="10.11.99.1",
+        name='Rsync',
+        username='root',
+        host='10.11.99.1',
         key=None,
         rsync_path=None,
         rsync_options=None,
         remote_documents=None,
         remote_templates=None,
         use_banner=False,
-        cache_mode="on_demand",
+        cache_mode='on_demand',
         known_hosts=None,
-        host_key_policy="ask",
+        host_key_policy='ask',
         **kw,
     ):
         LiveFileSourceSSH.__init__(
@@ -468,7 +469,7 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
         )
 
         log.info(
-            "DATA STORED IN:\n\t%s\n\t%s", self.local_roots[0], self.local_roots[1]
+            'DATA STORED IN:\n\t%s\n\t%s', self.local_roots[0], self.local_roots[1]
         )
 
         self.host = host
@@ -477,13 +478,13 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
 
         if rsync_path:
             self.RSYNC = [rsync_path]
-        self.RSYNC.append("--info=NAME")
+        self.RSYNC.append('--info=NAME')
 
-        ssh_config = ["-e", "%s -o batchmode=yes" % which("ssh")]
+        ssh_config = ['-e', '%s -o batchmode=yes' % which('ssh')]
         if key:
             ssh_config[-1] += ' -i "%s"' % key
-        if host_key_policy == "ignore_all":
-            ssh_config[-1] += " -o stricthostkeychecking=no"
+        if host_key_policy == 'ignore_all':
+            ssh_config[-1] += ' -o stricthostkeychecking=no'
         if known_hosts and known_hosts.is_file():
             ssh_config[-1] += ' -o userknownhostsfile="%s"' % known_hosts.resolve()
         self.RSYNC += ssh_config
@@ -494,68 +495,68 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
             else:
                 self.RSYNC += rsync_options
 
-        log.debug("RSYNC: %s", self.RSYNC)
+        log.debug('RSYNC: %s', self.RSYNC)
 
         self._bulk_download(
             self._remote(branch=TEMPLDIR), self._local(branch=TEMPLDIR), excludes=[]
         )
 
         with open(
-            self._local("templates.json", branch=TEMPLDIR), encoding="utf-8"
+            self._local('templates.json', branch=TEMPLDIR), encoding='utf-8'
         ) as f:
             idx = json.load(f)
 
-        for t in idx["templates"]:
-            name = t["filename"]  # "name" is just for display, not for lookup!!!
-            fname = self._local(t["filename"], branch=TEMPLDIR)
+        for t in idx['templates']:
+            name = t['filename']  # "name" is just for display, not for lookup!!!
+            fname = self._local(t['filename'], branch=TEMPLDIR)
             self.templates[name] = {}
-            if path.isfile(fname + ".svg"):
-                self.templates[name]["svg"] = t["filename"] + ".svg"
-            if path.isfile(fname + ".png"):
-                self.templates[name]["png"] = t["filename"] + ".png"
+            if path.isfile(fname + '.svg'):
+                self.templates[name]['svg'] = t['filename'] + '.svg'
+            if path.isfile(fname + '.png'):
+                self.templates[name]['png'] = t['filename'] + '.png'
 
     def _remote_rsync(self, path):
-        return f"{self.username}@{self.host}:{path}"
+        return f'{self.username}@{self.host}:{path}'
 
     def _bulk_download(
-        self, fr, to, excludes=["*"], includes=[], delete=True, progress=None
+        self, fr, to, excludes=['*'], includes=[], delete=True, progress=None
     ):
-        cmd = self.RSYNC + ["-vaz", "--prune-empty-dirs"]
+        cmd = self.RSYNC + ['-vaz', '--prune-empty-dirs']
         if delete:
-            cmd.append("--delete")
+            cmd.append('--delete')
         for i in includes:
-            cmd.append("--include")
+            cmd.append('--include')
             cmd.append(i)
         for e in excludes:
-            cmd.append("--exclude")
+            cmd.append('--exclude')
             cmd.append(e)
-        cmd.append(self._remote_rsync(fr + "/"))
+        cmd.append(self._remote_rsync(fr + '/'))
         cmd.append(to)
         if progress:
             with subprocess.Popen(cmd, stdout=subprocess.PIPE) as p:
                 for l in p.stdout:
-                    progress(0, 0, "Synching " + l.decode().strip())
+                    progress(0, 0, 'Synching ' + l.decode().strip())
                 p.wait()
             ret = p.returncode
         else:
             p = subprocess.run(cmd)
             ret = p.returncode
-        log.debug("RSYNC returned %s", ret)
+        log.debug('RSYNC returned %s', ret)
         if ret != 0:
             # TODO: would be nicer to capture stderr
             raise Exception(
-                "Could not invoke rsync correctly, check your configuration"
+                'Could not invoke rsync correctly, check your configuration'
             )
 
     def _file_download(self, fr, to):
         dirname = path.dirname(to)
         if not path.isdir(dirname):
             os.makedirs(dirname)
-        return subprocess.run(self.RSYNC + ["-zt", self._remote_rsync(fr), to])
+        return subprocess.run(self.RSYNC + ['-zt', self._remote_rsync(fr), to])
 
     def retrieve(self, *filename, ext=None, progress=None, force=False):
         if ext:
-            filename = filename[:-1] + (filename[-1] + "." + ext,)
+            filename = filename[:-1] + (filename[-1] + '.' + ext,)
         local = self._local(*filename)
         with self._lock:
             if force or not (path.isfile(local) and local in self._updated):
@@ -574,15 +575,15 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
             return None
 
     def prefetchMetadata(self, progress=None, force=False):
-        if self.cache_mode == "full_mirror":
+        if self.cache_mode == 'full_mirror':
             _excludes = []
             _includes = []
-        elif self.cache_mode == "light_mirror":
-            _excludes = ["*.thumbnails"]
+        elif self.cache_mode == 'light_mirror':
+            _excludes = ['*.thumbnails']
             _includes = []
         else:
-            _excludes = ["*"]
-            _includes = ["*.metadata", "*.content", "*.pagedata"]
+            _excludes = ['*']
+            _includes = ['*.metadata', '*.content', '*.pagedata']
         self._bulk_download(
             self._remote(),
             self._local(),
@@ -601,7 +602,7 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
                 self._remote(uid), self._local(uid), excludes=[], progress=progress
             )
             self._bulk_download(
-                self._remote(uid + ".highlights"),
+                self._remote(uid + '.highlights'),
                 self._local(uid),
                 excludes=[],
                 progress=progress,
@@ -612,5 +613,5 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
                         self._updated[entry.path] = True
 
     def cleanup(self):
-        log.debug("CLEANUP: %s", self._dirty)
+        log.debug('CLEANUP: %s', self._dirty)
         self.refreshXochitl()

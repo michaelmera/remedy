@@ -1,24 +1,22 @@
-from collections import namedtuple
+import json
+import os.path
 import struct
+from collections import namedtuple
 
 from remedy.remarkable.constants import *
 
-import json
-import os.path
+Layer = namedtuple('Layer', ['strokes', 'name', 'highlights'])
 
+Stroke = namedtuple('Stroke', ['pen', 'color', 'unk1', 'width', 'unk2', 'segments'])
+Segment = namedtuple('Segment', ['x', 'y', 'speed', 'direction', 'width', 'pressure'])
 
-Layer = namedtuple("Layer", ["strokes", "name", "highlights"])
-
-Stroke = namedtuple("Stroke", ["pen", "color", "unk1", "width", "unk2", "segments"])
-Segment = namedtuple("Segment", ["x", "y", "speed", "direction", "width", "pressure"])
-
-HEADER_START = b"reMarkable .lines file, version="
-S_HEADER_PAGE = struct.Struct(f"<{len(HEADER_START)}ss10s")
-S_PAGE = struct.Struct("<BBH")  # TODO: might be 'I'
-S_LAYER = struct.Struct("<I")
-S_STROKE_V3 = struct.Struct("<IIIfI")
-S_STROKE_V5 = struct.Struct("<IIIfII")
-S_SEGMENT = struct.Struct("<ffffff")
+HEADER_START = b'reMarkable .lines file, version='
+S_HEADER_PAGE = struct.Struct(f'<{len(HEADER_START)}ss10s')
+S_PAGE = struct.Struct('<BBH')  # TODO: might be 'I'
+S_LAYER = struct.Struct('<I')
+S_STROKE_V3 = struct.Struct('<IIIfI')
+S_STROKE_V5 = struct.Struct('<IIIfII')
+S_SEGMENT = struct.Struct('<ffffff')
 
 
 class UnsupportedVersion(Exception):
@@ -48,7 +46,7 @@ def readLines(source):
     try:
         header, ver, *_ = readStruct(S_HEADER_PAGE, source)
         if not header.startswith(HEADER_START):
-            raise InvalidFormat("Header is invalid")
+            raise InvalidFormat('Header is invalid')
         ver = int(ver)
         if ver == 3:
             readStroke = readStroke3
@@ -56,7 +54,7 @@ def readLines(source):
             readStroke = readStroke5
         else:
             raise UnsupportedVersion(
-                "Remedy supports notebooks in the version 3 and 5 format only"
+                'Remedy supports notebooks in the version 3 and 5 format only'
             )
         n_layers, _, _ = readStruct(S_PAGE, source)
         layers = []
@@ -77,4 +75,4 @@ def readLines(source):
         return (ver, layers)
 
     except struct.error:
-        raise InvalidFormat("Error while reading page")
+        raise InvalidFormat('Error while reading page')

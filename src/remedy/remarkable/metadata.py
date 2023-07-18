@@ -1,29 +1,26 @@
 from __future__ import annotations
 
 import json
-from itertools import *
-from collections import namedtuple
-import arrow
 import uuid
-
+from collections import namedtuple
+from copy import deepcopy
+from itertools import *
 from os import stat
 from pathlib import Path
-
-from remedy.remarkable.lines import *
-from remedy.remarkable.constants import *
-from remedy.remarkable.pdfbase import PDFBase
-from remedy.utils import deepupdate
-from copy import deepcopy
-
 from threading import RLock
 
-from remedy.utils import log
+import arrow
+
+from remedy.remarkable.constants import *
+from remedy.remarkable.lines import *
+from remedy.remarkable.pdfbase import PDFBase
+from remedy.utils import deepupdate, log
 
 # DocIndex = namedtuple('DocIndex', 'metadata tree trash')
-FolderNode = namedtuple("FolderNode", "folders files")
+FolderNode = namedtuple('FolderNode', 'folders files')
 
-FOLDER_TYPE = "CollectionType"
-DOCUMENT_TYPE = "DocumentType"
+FOLDER_TYPE = 'CollectionType'
+DOCUMENT_TYPE = 'DocumentType'
 
 NOTEBOOK = 1
 PDF = 2
@@ -74,18 +71,18 @@ BOTH = 3
 class Entry:
     @staticmethod
     def from_dict(index, uid, metadata, content) -> Entry:
-        if "type" not in metadata:
+        if 'type' not in metadata:
             return Unknown(index, uid, metadata, content)
 
-        if metadata["type"] == FOLDER_TYPE:
+        if metadata['type'] == FOLDER_TYPE:
             return Folder(index, uid, metadata, content)
 
-        elif metadata["type"] == DOCUMENT_TYPE:
-            if content["fileType"] in ["", "notebook"]:
+        elif metadata['type'] == DOCUMENT_TYPE:
+            if content['fileType'] in ['', 'notebook']:
                 return Notebook(index, uid, metadata, content)
-            elif content["fileType"] == "pdf":
+            elif content['fileType'] == 'pdf':
                 return PDFDoc(index, uid, metadata, content)
-            elif content["fileType"] == "epub":
+            elif content['fileType'] == 'epub':
                 return EBook(index, uid, metadata, content)
 
         return Unknown(index, uid, metadata, content)
@@ -104,7 +101,7 @@ class Entry:
         return False
 
     def name(self):
-        return self._metadata.get("visibleName")
+        return self._metadata.get('visibleName')
 
     def isDeleted(self):
         return self.index.isDeleted(self.uid)
@@ -132,7 +129,7 @@ class Entry:
     def fullPath(self, includeSelf=False):
         return self.index.fullPathOf(self.uid, includeSelf=includeSelf)
 
-    def updatedOn(self, default="Unknown"):
+    def updatedOn(self, default='Unknown'):
         try:
             return self.updatedDate().humanize()
         except Exception as e:
@@ -149,22 +146,22 @@ class Entry:
                 pass
         return self._updatedDate
 
-    def updatedFullDate(self, default="Unknown"):
+    def updatedFullDate(self, default='Unknown'):
         try:
-            return self.updatedDate().format("d MMM YYYY [at] hh:mm")
+            return self.updatedDate().format('d MMM YYYY [at] hh:mm')
         except Exception as e:
             return default
 
-    def openedOn(self, default="Unknown"):
+    def openedOn(self, default='Unknown'):
         try:
             return arrow.get(int(self.lastOpened) / 1000).humanize()
         except Exception as e:
             return default
 
-    def openedFullDate(self, default="Unknown"):
+    def openedFullDate(self, default='Unknown'):
         try:
             return arrow.get(int(self.lastOpened) / 1000).format(
-                "d MMM YYYY [at] hh:mm"
+                'd MMM YYYY [at] hh:mm'
             )
         except Exception as e:
             return default
@@ -174,24 +171,24 @@ class Entry:
             return None
         num = int(self.sizeInBytes)
         # https://stackoverflow.com/a/1094933/2753846
-        suffix = "B"
-        for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        suffix = 'B'
+        for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
             if abs(num) < 1024.0:
-                return f"{num:3.1f} {unit}{suffix}"
+                return f'{num:3.1f} {unit}{suffix}'
             num /= 1024.0
-        return f"{num:.1f} Y{suffix}"
+        return f'{num:.1f} Y{suffix}'
 
     def cover(self):
-        c = self.get("coverPageNumber", -1, CONTENT)
+        c = self.get('coverPageNumber', -1, CONTENT)
         if c < 0:
-            return self.get("lastOpenedPage", 0)
+            return self.get('lastOpenedPage', 0)
         return c
 
     def allDocTags(self):
-        return {t["name"] for t in self.tags or []}
+        return {t['name'] for t in self.tags or []}
 
     def allPageTags(self):
-        return {t["name"] for t in self.pageTags or []}
+        return {t['name'] for t in self.pageTags or []}
 
     def allTags(self):
         return self.allDocTags() | self.allPageTags()
@@ -204,7 +201,7 @@ class Entry:
         return default
 
     def __getattr__(self, field):
-        if field == "fsource" and self.index:
+        if field == 'fsource' and self.index:
             return self.index.fsource
         if field in self._metadata:
             return self._metadata[field]
@@ -214,7 +211,7 @@ class Entry:
 
     def __dir__(self):
         return (
-            ["name", "updatedOn", "isDeleted", "get", "fsource"]
+            ['name', 'updatedOn', 'isDeleted', 'get', 'fsource']
             + list(self._metadata.keys())
             + list(self._content.keys())
         )
@@ -226,9 +223,9 @@ class Folder(Entry):
         self.folders = []
 
     def get(self, field, default=None):
-        if field == "files":
+        if field == 'files':
             yield from self.files
-        elif field == "folders":
+        elif field == 'folders':
             yield from self.files
         elif field in self._metadata:
             return self._metadata[field]
@@ -238,7 +235,7 @@ class Folder(Entry):
             return default
 
     def typeName(self):
-        return "folder"
+        return 'folder'
 
 
 class Unknown(Entry):
@@ -246,11 +243,11 @@ class Unknown(Entry):
         return default
 
     def typeName(self):
-        return "unknown"
+        return 'unknown'
 
 
-ROOT_ID = ""
-TRASH_ID = "trash"
+ROOT_ID = ''
+TRASH_ID = 'trash'
 
 
 class RootFolder(Folder):
@@ -258,10 +255,10 @@ class RootFolder(Folder):
         self.index = index
         self.uid = ROOT_ID
         self._metadata = {
-            "visibleName": "reMarkable",
-            "parent": None,
-            "deleted": False,
-            "type": FOLDER_TYPE,
+            'visibleName': 'reMarkable',
+            'parent': None,
+            'deleted': False,
+            'type': FOLDER_TYPE,
         }
         self._content = {}
         self._postInit()
@@ -275,10 +272,10 @@ class TrashBin(Folder):
         self.index = index
         self.uid = TRASH_ID
         self._metadata = {
-            "visibleName": "Trash",
-            "parent": None,
-            "deleted": False,
-            "type": FOLDER_TYPE,
+            'visibleName': 'Trash',
+            'parent': None,
+            'deleted': False,
+            'type': FOLDER_TYPE,
         }
         self._content = {}
         self._postInit()
@@ -294,7 +291,7 @@ class TrashBin(Folder):
         yield from self.files
 
     def typeName(self):
-        return "trash"
+        return 'trash'
 
 
 class Document(Entry):
@@ -308,29 +305,29 @@ class Document(Entry):
         pages = self.pages
         try:
             pid = self.getPageId(pageNum)
-            rmfile = self.fsource.retrieve(self.uid, pid, ext="rm", force=force)
-            with open(rmfile, "rb") as f:
+            rmfile = self.fsource.retrieve(self.uid, pid, ext='rm', force=force)
+            with open(rmfile, 'rb') as f:
                 (ver, layers) = readLines(f)
         except:
             ver = 5
             layers = []
         else:
             try:
-                mfile = self.fsource.retrieve(self.uid, pid + "-metadata", ext="json")
+                mfile = self.fsource.retrieve(self.uid, pid + '-metadata', ext='json')
                 with open(mfile) as f:
                     layerNames = json.load(f)
-                layerNames = layerNames["layers"]
+                layerNames = layerNames['layers']
             except Exception:
-                layerNames = [{"name": "Layer %d" % j} for j in range(len(layers))]
+                layerNames = [{'name': 'Layer %d' % j} for j in range(len(layers))]
 
             highlights = {}
             try:
-                if self.fsource.exists(self.uid + ".highlights", pid, ext="json"):
+                if self.fsource.exists(self.uid + '.highlights', pid, ext='json'):
                     hfile = self.fsource.retrieve(
-                        self.uid + ".highlights", pid, ext="json"
+                        self.uid + '.highlights', pid, ext='json'
                     )
                     with open(hfile) as f:
-                        h = json.load(f).get("highlights", [])
+                        h = json.load(f).get('highlights', [])
                     for i in range(len(h)):
                         highlights[i] = h[i]
             except Exception:
@@ -338,7 +335,7 @@ class Document(Entry):
 
             for j in range(len(layers)):
                 layers[j] = Layer(
-                    layers[j], layerNames[j].get("name"), highlights.get(j, [])
+                    layers[j], layerNames[j].get('name'), highlights.get(j, [])
                 )
 
         return self._makePage(layers, ver, pageNum)
@@ -355,13 +352,13 @@ class Document(Entry):
 
     def numHighlightedPages(self):
         i = 0
-        for _ in self.fsource.listSubItems(self.uid + ".highlights", ext=".json"):
+        for _ in self.fsource.listSubItems(self.uid + '.highlights', ext='.json'):
             i += 1
         return i
 
     def numMarkedPages(self):
         i = 0
-        for _ in self.fsource.listSubItems(self.uid, ext=".rm"):
+        for _ in self.fsource.listSubItems(self.uid, ext='.rm'):
             i += 1
         return i
 
@@ -379,25 +376,25 @@ class Document(Entry):
             pageRange = range(pageRange, pageRange + 1)
         for i in pageRange:
             pid = pages[i]
-            if self.fsource.exists(self.uid + ".highlights", pid, ext="json"):
-                hfile = self.fsource.retrieve(self.uid + ".highlights", pid, ext="json")
+            if self.fsource.exists(self.uid + '.highlights', pid, ext='json'):
+                hfile = self.fsource.retrieve(self.uid + '.highlights', pid, ext='json')
                 try:
                     with open(hfile) as f:
                         h = json.load(f)
                 except Exception:
                     pass
                 else:
-                    h["pageNum"] = i + 1
-                    h["pageId"] = pid
+                    h['pageNum'] = i + 1
+                    h['pageId'] = pid
                     highlights.append(h)
         return highlights
 
     def marked(self, pageNum, highlights=True):
         pid = self.getPageId(pageNum)
-        if self.fsource.exists(self.uid, pid, ext="rm"):
+        if self.fsource.exists(self.uid, pid, ext='rm'):
             return True
         if highlights:
-            if self.fsource.exists(self.uid + ".highlights", pid, ext="json"):
+            if self.fsource.exists(self.uid + '.highlights', pid, ext='json'):
                 return True
         return False
 
@@ -428,12 +425,12 @@ class Document(Entry):
 
 
 Page = namedtuple(
-    "Page",
-    ["layers", "version", "pageNum", "document", "background"],
+    'Page',
+    ['layers', 'version', 'pageNum', 'document', 'background'],
     defaults=[None, None, None],
 )
 
-Template = namedtuple("Template", ["name", "retrieve"])
+Template = namedtuple('Template', ['name', 'retrieve'])
 
 # Here 'background' is either None or a Template object.
 # Subclasses of Page may use additional types.
@@ -444,9 +441,9 @@ Template = namedtuple("Template", ["name", "retrieve"])
 class Notebook(Document):
     def _postInit(self):
         try:
-            pfile = self.fsource.retrieve(self.uid, ext="pagedata")
+            pfile = self.fsource.retrieve(self.uid, ext='pagedata')
             with open(pfile) as f:
-                self._bg = [t.rstrip("\n") for t in f.readlines()]
+                self._bg = [t.rstrip('\n') for t in f.readlines()]
         except OSError:
             pass
 
@@ -466,7 +463,7 @@ class Notebook(Document):
         return Page(layers, version, pageNum, document=self, background=template)
 
     def typeName(self):
-        return "notebook"
+        return 'notebook'
 
 
 class PDFBasedDoc(Document):
@@ -481,7 +478,7 @@ class PDFBasedDoc(Document):
 
     def markedPages(self):
         for i, p in enumerate(self.pages):
-            if self.fsource.exists(self.uid, p, ext="rm"):
+            if self.fsource.exists(self.uid, p, ext='rm'):
                 yield i
 
     # TODO: hasMarkedPages and hasHighlights (returning number of)
@@ -503,10 +500,10 @@ class PDFBasedDoc(Document):
         return self._pdf
 
     def baseDocumentName(self):
-        return self.uid + ".pdf"
+        return self.uid + '.pdf'
 
     def originalName(self):
-        return self.uid + ".pdf"
+        return self.uid + '.pdf'
 
     def _fallbackPageCount(self):
         return self._pdf.pageCount()
@@ -514,80 +511,80 @@ class PDFBasedDoc(Document):
 
 class PDFDoc(PDFBasedDoc):
     def typeName(self):
-        return "pdf"
+        return 'pdf'
 
 
 class EBook(PDFBasedDoc):
     def originalName(self):
-        return self.uid + ".epub"
+        return self.uid + '.epub'
 
     def typeName(self):
-        return "epub"
+        return 'epub'
 
 
 DOC_BASE_METADATA = {
-    "deleted": False,
-    "metadatamodified": True,
-    "modified": True,
-    "parent": "",
-    "pinned": False,
-    "synced": False,
-    "type": "DocumentType",
-    "version": 0,
+    'deleted': False,
+    'metadatamodified': True,
+    'modified': True,
+    'parent': '',
+    'pinned': False,
+    'synced': False,
+    'type': 'DocumentType',
+    'version': 0,
 }
 # "lastModified": "1592831071604",
 # "visibleName": ""
 
 
 PDF_BASE_CONTENT = {
-    "dummyDocument": False,
-    "extraMetadata": {},
-    "fileType": "pdf",
-    "fontName": "",
-    "lastOpenedPage": 0,
-    "legacyEpub": False,
-    "lineHeight": -1,
-    "margins": 100,
-    "orientation": "portrait",
-    "pageCount": 0,
-    "textAlignment": "left",
-    "textScale": 1,
-    "transform": {
-        "m11": 1,
-        "m12": 0,
-        "m13": 0,
-        "m21": 0,
-        "m22": 1,
-        "m23": 0,
-        "m31": 0,
-        "m32": 0,
-        "m33": 1,
+    'dummyDocument': False,
+    'extraMetadata': {},
+    'fileType': 'pdf',
+    'fontName': '',
+    'lastOpenedPage': 0,
+    'legacyEpub': False,
+    'lineHeight': -1,
+    'margins': 100,
+    'orientation': 'portrait',
+    'pageCount': 0,
+    'textAlignment': 'left',
+    'textScale': 1,
+    'transform': {
+        'm11': 1,
+        'm12': 0,
+        'm13': 0,
+        'm21': 0,
+        'm22': 1,
+        'm23': 0,
+        'm31': 0,
+        'm32': 0,
+        'm33': 1,
     },
 }
 
 EPUB_BASE_CONTENT = {
-    "dummyDocument": False,
-    "extraMetadata": {},
-    "fileType": "epub",
-    "fontName": "Noto Serif",
-    "legacyEpub": False,
-    "lineHeight": 150,
-    "margins": 200,
-    "orientation": "portrait",
-    "textAlignment": "justify",
-    "textScale": 0.8,
-    "lastOpenedPage": 0,
-    "pageCount": 0,
-    "transform": {
-        "m11": 1,
-        "m12": 0,
-        "m13": 0,
-        "m21": 0,
-        "m22": 1,
-        "m23": 0,
-        "m31": 0,
-        "m32": 0,
-        "m33": 1,
+    'dummyDocument': False,
+    'extraMetadata': {},
+    'fileType': 'epub',
+    'fontName': 'Noto Serif',
+    'legacyEpub': False,
+    'lineHeight': 150,
+    'margins': 200,
+    'orientation': 'portrait',
+    'textAlignment': 'justify',
+    'textScale': 0.8,
+    'lastOpenedPage': 0,
+    'pageCount': 0,
+    'transform': {
+        'm11': 1,
+        'm12': 0,
+        'm13': 0,
+        'm21': 0,
+        'm22': 1,
+        'm23': 0,
+        'm31': 0,
+        'm32': 0,
+        'm33': 1,
     },
 }
 
@@ -598,14 +595,14 @@ DOC_BASE_CONTENT = {
 
 
 FOLDER_METADATA = {
-    "deleted": False,
-    "metadatamodified": True,
-    "modified": True,
-    "parent": "",
-    "pinned": False,
-    "synced": False,
-    "type": "CollectionType",
-    "version": 0,
+    'deleted': False,
+    'metadatamodified': True,
+    'modified': True,
+    'parent': '',
+    'pinned': False,
+    'synced': False,
+    'type': 'CollectionType',
+    'version': 0,
     # "lastModified": "timestamp",
     # "visibleName": "..."
 }
@@ -624,24 +621,24 @@ class RemarkableIndex:
         for j, uid in enumerate(uids):
             progress(j, len(uids) * 2)
 
-            metadata = self.fsource.readJson(uid, ext="metadata")
-            content = self.fsource.readJson(uid, ext="content")
+            metadata = self.fsource.readJson(uid, ext='metadata')
+            content = self.fsource.readJson(uid, ext='content')
 
-            for t in content.get("tags", []):
-                if t["name"] not in tags:
-                    tags[t["name"]] = {
-                        "docs": [],
-                        "pages": [],
+            for t in content.get('tags', []):
+                if t['name'] not in tags:
+                    tags[t['name']] = {
+                        'docs': [],
+                        'pages': [],
                     }
-                tags[t["name"]]["docs"].append(uid)
+                tags[t['name']]['docs'].append(uid)
 
-            for t in content.get("pageTags", []):
-                if t["name"] not in tags:
-                    tags[t["name"]] = {
-                        "docs": [],
-                        "pages": [],
+            for t in content.get('pageTags', []):
+                if t['name'] not in tags:
+                    tags[t['name']] = {
+                        'docs': [],
+                        'pages': [],
                     }
-                tags[t["name"]]["pages"].append({"doc": uid, "page": t["pageId"]})
+                tags[t['name']]['pages'].append({'doc': uid, 'page': t['pageId']})
 
             index[uid] = Entry.from_dict(self, uid, metadata, content)
 
@@ -660,7 +657,7 @@ class RemarkableIndex:
                         index[parent].files.append(k)
             except KeyError as e:
                 raise RemarkableDocumentError(
-                    f"Could not find field {e} in document {k}"
+                    f'Could not find field {e} in document {k}'
                 )
 
         self.index = index
@@ -702,7 +699,7 @@ class RemarkableIndex:
         elif uid == TRASH_ID:
             return self.trash
         else:
-            raise RemarkableError("Uid %s not found!" % uid)
+            raise RemarkableError('Uid %s not found!' % uid)
 
     def allUids(self):
         return self.index.keys()
@@ -735,12 +732,12 @@ class RemarkableIndex:
 
     def fullPathOf(self, uid, includeSelf=False):
         p = self.pathOf(
-            uid, delim="/", includeSelf=includeSelf
+            uid, delim='/', includeSelf=includeSelf
         )  # + '/' + self.nameOf(uid)
         if (not includeSelf) or self.isFolder(uid):
-            p += "/"
-        if not p.startswith("/"):
-            p = "/" + p
+            p += '/'
+        if not p.startswith('/'):
+            p = '/' + p
         return p
 
     def uidFromPath(self, path, start=ROOT_ID, delim=None):
@@ -750,12 +747,12 @@ class RemarkableIndex:
         if not p:
             return ROOT_ID
         node = self.index[start]
-        if p[0] == "" or p[0] == "/":
+        if p[0] == '' or p[0] == '/':
             node = self.root()
         for name in p[0:-1]:
-            if name == "." or name == "" or name == "/":
+            if name == '.' or name == '' or name == '/':
                 continue
-            if name == "..":
+            if name == '..':
                 node = self.index[node.parent]
                 continue
             newfound = None
@@ -767,9 +764,9 @@ class RemarkableIndex:
             if not newfound:
                 return None
         last = p[-1]
-        if last == "." or last == "" or last == "/":
+        if last == '.' or last == '' or last == '/':
             return node.uid
-        if last == "..":
+        if last == '..':
             return node.parent
         for k in node.folders:
             if self.index[k].visibleName == last:
@@ -781,7 +778,7 @@ class RemarkableIndex:
 
     def isOfType(self, uid, mask):
         mask = mask & ANYTHING
-        if uid == "":
+        if uid == '':
             return bool(mask & FOLDER) and not (mask & DELETED)
         if uid == TRASH_ID:
             return bool(mask & FOLDER)
@@ -790,11 +787,11 @@ class RemarkableIndex:
         t = 0
         if self.index[uid].type == FOLDER_TYPE:
             t = FOLDER
-        elif self.index[uid].fileType in ["", "notebook"]:
+        elif self.index[uid].fileType in ['', 'notebook']:
             t = NOTEBOOK
-        elif self.index[uid].fileType == "pdf":
+        elif self.index[uid].fileType == 'pdf':
             t = PDF
-        elif self.index[uid].fileType == "epub":
+        elif self.index[uid].fileType == 'epub':
             t = EPUB
         if not self.index[uid].deleted:
             t = t >> 4
@@ -802,18 +799,18 @@ class RemarkableIndex:
 
     def typeOf(self, uid):
         # Usage: bool(index.typeOf(uid) & NOTEBOOK)
-        if uid == "" or uid == TRASH_ID:
+        if uid == '' or uid == TRASH_ID:
             return FOLDER
         if uid not in self.index:
             return None
         t = 0
         if self.index[uid].type == FOLDER_TYPE:
             t = FOLDER
-        elif self.index[uid].fileType in ["", "notebook"]:
+        elif self.index[uid].fileType in ['', 'notebook']:
             t = NOTEBOOK
-        elif self.index[uid].fileType == "pdf":
+        elif self.index[uid].fileType == 'pdf':
             t = PDF
-        elif self.index[uid].fileType == "epub":
+        elif self.index[uid].fileType == 'epub':
             t = EPUB
         if not self.index[uid].deleted:
             t = t >> 4
@@ -852,7 +849,7 @@ class RemarkableIndex:
         try:
             updated = arrow.get(int(self.lastModifiedOf(uid)) / 1000).humanize()
         except Exception as e:
-            updated = self.lastModifiedOf(uid) or "Unknown"
+            updated = self.lastModifiedOf(uid) or 'Unknown'
         return updated
 
     def nameOf(self, uid):
@@ -870,7 +867,7 @@ class RemarkableIndex:
         return False
 
     def __getattr__(self, field):
-        if field.endswith("Of"):
+        if field.endswith('Of'):
             return (
                 lambda uid: self.index[uid].get(field[:-2])
                 if uid in self.index
@@ -935,7 +932,7 @@ class RemarkableIndex:
             if not uid:
                 uid = self.reserveUid()
 
-            log.info("Preparing creation of %s", uid)
+            log.info('Preparing creation of %s', uid)
             self._new_entry_prepare(uid, FOLDER, metadata)
 
             def p(x):
@@ -943,23 +940,23 @@ class RemarkableIndex:
                     progress(x, 2)
                 self._new_entry_progress(uid, x, 2)
 
-            if self.fsource.exists(uid, ext="metadata"):
+            if self.fsource.exists(uid, ext='metadata'):
                 raise RemarkableUidCollision(
-                    "Attempting to create new document but chosen uuid is in use"
+                    'Attempting to create new document but chosen uuid is in use'
                 )
 
             p(0)
 
             meta = FOLDER_METADATA.copy()
-            meta.setdefault("visibleName", "New Folder")
-            meta.setdefault("lastModified", str(arrow.utcnow().int_timestamp * 1000))
+            meta.setdefault('visibleName', 'New Folder')
+            meta.setdefault('lastModified', str(arrow.utcnow().int_timestamp * 1000))
             meta.update(metadata)
-            if not self.isFolder(meta["parent"]):
-                raise RemarkableError("Cannot find parent %s" % meta["parent"])
+            if not self.isFolder(meta['parent']):
+                raise RemarkableError('Cannot find parent %s' % meta['parent'])
 
-            self.fsource.store(meta, uid + ".metadata")
+            self.fsource.store(meta, uid + '.metadata')
             p(1)
-            self.fsource.store({}, uid + ".content")
+            self.fsource.store({}, uid + '.content')
             p(2)
 
             self.index[uid] = d = Folder(self, uid, meta, {})
@@ -970,8 +967,8 @@ class RemarkableIndex:
             return uid
         except Exception as e:
             # cleanup if partial upload
-            self.fsource.remove(uid + ".metadata")
-            self.fsource.remove(uid + ".content")
+            self.fsource.remove(uid + '.metadata')
+            self.fsource.remove(uid + '.content')
             self._new_entry_error(e, uid, FOLDER, metadata)
             raise e
 
@@ -986,16 +983,16 @@ class RemarkableIndex:
                 uid = self.reserveUid()
             path = Path(path)
             ext = path.suffix.lower()
-            if ext == ".pdf":
+            if ext == '.pdf':
                 etype = PDF
-            elif ext == ".epub":
+            elif ext == '.epub':
                 etype = EPUB
             else:
                 raise RemarkableError(
-                    "Can only upload PDF and EPUB files, but was given a %s" % ext
+                    'Can only upload PDF and EPUB files, but was given a %s' % ext
                 )
 
-            log.info("Preparing creation of %s", uid)
+            log.info('Preparing creation of %s', uid)
             self._new_entry_prepare(uid, etype, metadata, path)
 
             totBytes = 0
@@ -1015,17 +1012,17 @@ class RemarkableIndex:
 
                 up = None
 
-            if self.fsource.exists(uid, ext="metadata"):
+            if self.fsource.exists(uid, ext='metadata'):
                 raise RemarkableUidCollision(
-                    "Attempting to create new document but chosen uuid is in use"
+                    'Attempting to create new document but chosen uuid is in use'
                 )
 
             meta = DOC_BASE_METADATA.copy()
-            meta.setdefault("visibleName", path.stem)
-            meta.setdefault("lastModified", str(arrow.utcnow().int_timestamp * 1000))
+            meta.setdefault('visibleName', path.stem)
+            meta.setdefault('lastModified', str(arrow.utcnow().int_timestamp * 1000))
             deepupdate(meta, metadata)
-            if not self.isFolder(meta["parent"]):
-                raise RemarkableError("Cannot find parent %s" % meta["parent"])
+            if not self.isFolder(meta['parent']):
+                raise RemarkableError('Cannot find parent %s' % meta['parent'])
 
             cont = deepcopy(DOC_BASE_CONTENT[etype])
             deepupdate(cont, content)
@@ -1034,11 +1031,11 @@ class RemarkableIndex:
             totBytes = 400 + stat(path).st_size
 
             p(0)
-            self.fsource.store(meta, uid + ".metadata")
+            self.fsource.store(meta, uid + '.metadata')
             p(200)
-            self.fsource.store(cont, uid + ".content")
+            self.fsource.store(cont, uid + '.content')
             p(300)
-            self.fsource.store("", uid + ".pagedata")
+            self.fsource.store('', uid + '.pagedata')
             p(400)
             self.fsource.upload(path, uid + ext, progress=up)
             self.fsource.makeDir(uid)
@@ -1059,9 +1056,9 @@ class RemarkableIndex:
         except Exception as e:
             # cleanup if partial upload
             self.fsource.remove(uid + ext)
-            self.fsource.remove(uid + ".metadata")
-            self.fsource.remove(uid + ".content")
-            self.fsource.remove(uid + ".pagedata")
+            self.fsource.remove(uid + '.metadata')
+            self.fsource.remove(uid + '.content')
+            self.fsource.remove(uid + '.pagedata')
             self.fsource.removeDir(uid)
             self._new_entry_error(e, uid, etype, metadata, path)
             raise e
@@ -1074,42 +1071,42 @@ class RemarkableIndex:
                 self._update_entry_prepare(uid, metadata, content)
 
                 if uid == ROOT_ID or uid == TRASH_ID:
-                    raise RemarkableError("Cannot update root and trash entries")
+                    raise RemarkableError('Cannot update root and trash entries')
 
                 entry = self.get(uid)
 
                 if content:
                     cont = deepcopy(entry._content)
                     deepupdate(cont, content)
-                    self.fsource.store(cont, uid + ".content", overwrite=True)
+                    self.fsource.store(cont, uid + '.content', overwrite=True)
                     entry._content = cont
 
                 if metadata or content:  # if content changed, bump version
                     new_parent = old_parent = None  # flagging no reparenting needed
-                    if "type" in metadata:
-                        raise RemarkableError("Cannot change type of document")
+                    if 'type' in metadata:
+                        raise RemarkableError('Cannot change type of document')
                     # Safety checks for move operations
-                    if "parent" in metadata:
+                    if 'parent' in metadata:
                         old_parent = entry.parentEntry()
-                        new_parent = self.get(metadata["parent"])
+                        new_parent = self.get(metadata['parent'])
                         if not new_parent.isFolder():
                             raise RemarkableError(
-                                "Cannot change parent of %s to %s which is not a folder"
+                                'Cannot change parent of %s to %s which is not a folder'
                                 % (uid, new_parent.uid)
                             )
                         if entry.isFolder() and uid in new_parent.ancestry():
                             raise RemarkableError(
-                                "Circularity would be introduced by making %s a parent of %s"
+                                'Circularity would be introduced by making %s a parent of %s'
                                 % (new_parent.uid, uid)
                             )
                     meta = deepcopy(entry._metadata)
                     metadata.setdefault(
-                        "lastModified", str(arrow.utcnow().int_timestamp * 1000)
+                        'lastModified', str(arrow.utcnow().int_timestamp * 1000)
                     )
-                    metadata.setdefault("metadatamodified", True)
-                    metadata.setdefault("version", entry.version + 1)
+                    metadata.setdefault('metadatamodified', True)
+                    metadata.setdefault('version', entry.version + 1)
                     deepupdate(meta, metadata)
-                    self.fsource.store(meta, uid + ".metadata", overwrite=True)
+                    self.fsource.store(meta, uid + '.metadata', overwrite=True)
 
                     entry._metadata = meta
                     if new_parent is not None:

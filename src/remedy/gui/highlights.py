@@ -1,35 +1,35 @@
+import json
+from textwrap import TextWrapper
+
+from PyQt5.QtCore import QSize, Qt, QThread, QUrl, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QDesktopServices, QIcon
 from PyQt5.QtWidgets import (
-    QMainWindow,
-    QTextEdit,
     QDesktopWidget,
-    QProgressDialog,
-    QMessageBox,
     QFileDialog,
+    QMainWindow,
+    QMessageBox,
+    QProgressDialog,
+    QTextEdit,
 )
-from PyQt5.QtGui import QIcon, QDesktopServices
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread, QSize, Qt, QUrl
 
 from remedy.utils import log
 
-from textwrap import TextWrapper
-import json
-
 HCOL = {
-    0: "#ffeb93",
-    1: "#ffeb93",
-    3: "#fefd60",
-    4: "#a9fa5c",
-    5: "#ff55cf",
-    8: "#A5A5A5",
+    0: '#ffeb93',
+    1: '#ffeb93',
+    3: '#fefd60',
+    4: '#a9fa5c',
+    5: '#ff55cf',
+    8: '#A5A5A5',
 }
 
 HCODES = {
-    0: "yellow",
-    1: "yellow",
-    3: "yellow",
-    4: "green",
-    5: "pink",
-    8: "gray",
+    0: 'yellow',
+    1: 'yellow',
+    3: 'yellow',
+    4: 'green',
+    5: 'pink',
+    8: 'gray',
 }
 
 
@@ -52,9 +52,9 @@ class HighlightsGen(QThread):
     def cancel(self):
         self._cancel = True
 
-    def _progress(self, txt="", i=1):
+    def _progress(self, txt='', i=1):
         if self._cancel:
-            raise CancelledHighlightsGen("Highlights generation was cancelled")
+            raise CancelledHighlightsGen('Highlights generation was cancelled')
         # QCoreApplication.processEvents()
         if i > 0:
             self.onProgress.emit(txt)
@@ -81,20 +81,20 @@ class HighlightsGen(QThread):
                 self._progress(doc.name())
                 h = [
                     {
-                        "pageNum": hp.get("pageNum", 0),
-                        "highlights": list(
+                        'pageNum': hp.get('pageNum', 0),
+                        'highlights': list(
                             sorted(
                                 (
                                     {
-                                        "text": clip.get("text", ""),
-                                        "start": clip.get("start", 0),
-                                        "color": clip.get("color", 0),
-                                        "layer": l + 1,
+                                        'text': clip.get('text', ''),
+                                        'start': clip.get('start', 0),
+                                        'color': clip.get('color', 0),
+                                        'layer': l + 1,
                                     }
-                                    for l, hlayer in enumerate(hp.get("highlights", []))
+                                    for l, hlayer in enumerate(hp.get('highlights', []))
                                     for clip in hlayer
                                 ),
-                                key=lambda c: c.get("start", 0),
+                                key=lambda c: c.get('start', 0),
                             )
                         ),
                     }
@@ -102,10 +102,10 @@ class HighlightsGen(QThread):
                 ]
                 if len(h) > 0:
                     results.append((doc, h))
-            self._progress("Done")
+            self._progress('Done')
             self.onSuccess.emit(results)
         except Exception as e:
-            log.warning("Exception on highlights generation: %s", e)
+            log.warning('Exception on highlights generation: %s', e)
             self.onError.emit(e)
             import traceback
 
@@ -120,8 +120,8 @@ class HighlightsViewer(QMainWindow):
         self.txtbox = QTextEdit()
         self.setCentralWidget(self.txtbox)
         self.dialog = QProgressDialog(parent=self.parent())
-        self.dialog.setWindowTitle("Generating Highlights")
-        self.dialog.setLabelText("Initialising...")
+        self.dialog.setWindowTitle('Generating Highlights')
+        self.dialog.setLabelText('Initialising...')
         self.dialog.setMinimumDuration(500)
         self.dialog.setAutoClose(True)
         exporter = HighlightsGen(entries, parent=self, **kwargs)
@@ -133,40 +133,40 @@ class HighlightsViewer(QMainWindow):
         exporter.start()
         self.resize(QDesktopWidget().availableGeometry(self).size() * 0.4)
         self.setUnifiedTitleAndToolBarOnMac(True)
-        tb = self.addToolBar("Export")
+        tb = self.addToolBar('Export')
         tb.setIconSize(QSize(16, 16))
         tb.setFloatable(False)
         tb.setMovable(False)
         tb.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        b1 = tb.addAction(QIcon(":/assets/16/export.svg"), "Export")
+        b1 = tb.addAction(QIcon(':/assets/16/export.svg'), 'Export')
         b1.triggered.connect(self.export)
         tb.addSeparator()
         self.colorBtn = {}
-        b = self.colorBtn["pink"] = tb.addAction(
-            QIcon(":/assets/16/hl-pink.svg"), "Pink"
+        b = self.colorBtn['pink'] = tb.addAction(
+            QIcon(':/assets/16/hl-pink.svg'), 'Pink'
         )
         b.setCheckable(True)
         b.setChecked(True)
         b.toggled.connect(self._refreshResults)
-        b = self.colorBtn["yellow"] = tb.addAction(
-            QIcon(":/assets/16/hl-yellow.svg"), "Yellow"
+        b = self.colorBtn['yellow'] = tb.addAction(
+            QIcon(':/assets/16/hl-yellow.svg'), 'Yellow'
         )
         b.setCheckable(True)
         b.setChecked(True)
         b.toggled.connect(self._refreshResults)
-        b = self.colorBtn["green"] = tb.addAction(
-            QIcon(":/assets/16/hl-green.svg"), "Green"
+        b = self.colorBtn['green'] = tb.addAction(
+            QIcon(':/assets/16/hl-green.svg'), 'Green'
         )
         b.setCheckable(True)
         b.setChecked(True)
         b.toggled.connect(self._refreshResults)
-        b = self.colorBtn["gray"] = tb.addAction(
-            QIcon(":/assets/16/hl-gray.svg"), "Gray"
+        b = self.colorBtn['gray'] = tb.addAction(
+            QIcon(':/assets/16/hl-gray.svg'), 'Gray'
         )
         b.setCheckable(True)
         b.setChecked(True)
         b.toggled.connect(self._refreshResults)
-        self.refreshResults(defaultMsg="Loading highlights...")
+        self.refreshResults(defaultMsg='Loading highlights...')
 
     @pyqtSlot(Exception)
     def onError(self, e):
@@ -174,8 +174,8 @@ class HighlightsViewer(QMainWindow):
         if not isinstance(e, CancelledHighlightsGen):
             QMessageBox.critical(
                 self.parent(),
-                "Error",
-                "Something went wrong while exporting.\n\n" + str(e),
+                'Error',
+                'Something went wrong while exporting.\n\n' + str(e),
             )
         self.close()
 
@@ -185,7 +185,7 @@ class HighlightsViewer(QMainWindow):
 
     @pyqtSlot(str)
     def onProgress(self, s):
-        self.dialog.setLabelText(f"Generating Highlights: {s}...")
+        self.dialog.setLabelText(f'Generating Highlights: {s}...')
         self.dialog.setValue(self.dialog.value() + 1)
 
     @pyqtSlot(list)
@@ -197,17 +197,17 @@ class HighlightsViewer(QMainWindow):
     def _refreshResults(self, checked=True):
         self.refreshResults()
 
-    def refreshResults(self, defaultMsg="No highlights found."):
+    def refreshResults(self, defaultMsg='No highlights found.'):
         if self._result:
             txt = "&nbsp;<div style='margin: 30px; margin-top: 15px'>"
             for entry, highlights in self._result:
-                txt += f"<h2>{entry.name()}</h2>"
+                txt += f'<h2>{entry.name()}</h2>'
                 for h in highlights:
                     clips = [
                         clip
-                        for clip in h.get("highlights", [])
+                        for clip in h.get('highlights', [])
                         if self.colorBtn.get(
-                            HCODES.get(clip.get("color", 1), "yellow")
+                            HCODES.get(clip.get('color', 1), 'yellow')
                         ).isChecked()
                     ]
                     if len(clips) > 0:
@@ -227,8 +227,8 @@ class HighlightsViewer(QMainWindow):
               </tr>
               </table>
               """
-                        txt += "</div>"
-            txt += "</div>&nbsp;"
+                        txt += '</div>'
+            txt += '</div>&nbsp;'
         else:
             txt = defaultMsg
         self.txtbox.setHtml(txt)
@@ -237,43 +237,43 @@ class HighlightsViewer(QMainWindow):
         if self._result:
             filename, ok = QFileDialog.getSaveFileName(
                 self,
-                "Export highlights",
-                "highlights.md",
-                "Markdown (*.md);;Plain text (*.txt);;JSON (*.json)",
+                'Export highlights',
+                'highlights.md',
+                'Markdown (*.md);;Plain text (*.txt);;JSON (*.json)',
             )
             if ok:
-                if filename.endswith(".md"):
-                    wrapper = TextWrapper(initial_indent=" > ", subsequent_indent="   ")
-                    with open(filename, "w") as out:
+                if filename.endswith('.md'):
+                    wrapper = TextWrapper(initial_indent=' > ', subsequent_indent='   ')
+                    with open(filename, 'w') as out:
                         for entry, highlights in self._result:
-                            out.write(f"## {entry.name()}\n\n")
+                            out.write(f'## {entry.name()}\n\n')
                             for h in highlights:
                                 clips = [
                                     clip
-                                    for clip in h.get("highlights", [])
+                                    for clip in h.get('highlights', [])
                                     if self.colorBtn.get(
-                                        HCODES.get(clip.get("color", 1), "yellow")
+                                        HCODES.get(clip.get('color', 1), 'yellow')
                                     ).isChecked()
                                 ]
                                 if len(clips) > 0:
                                     out.write(f"Page {h.get('pageNum', '?')}\n\n")
                                     for clip in clips:
-                                        out.write(wrapper.fill(clip.get("text", "")))
-                                        out.write("\n\n")
-                    QDesktopServices.openUrl(QUrl("file://" + filename))
-                elif filename.endswith(".txt"):
-                    with open(filename, "w") as out:
+                                        out.write(wrapper.fill(clip.get('text', '')))
+                                        out.write('\n\n')
+                    QDesktopServices.openUrl(QUrl('file://' + filename))
+                elif filename.endswith('.txt'):
+                    with open(filename, 'w') as out:
                         out.write(self.txtbox.toPlainText())
-                    QDesktopServices.openUrl(QUrl("file://" + filename))
-                elif filename.endswith(".json"):
-                    with open(filename, "w") as out:
+                    QDesktopServices.openUrl(QUrl('file://' + filename))
+                elif filename.endswith('.json'):
+                    with open(filename, 'w') as out:
                         json.dump(
                             [
                                 {
-                                    "title": d.name(),
-                                    "path": "/" + d.path(delim="/"),
-                                    "uid": d.uid,
-                                    "pages": h,
+                                    'title': d.name(),
+                                    'path': '/' + d.path(delim='/'),
+                                    'uid': d.uid,
+                                    'pages': h,
                                 }
                                 for d, h in self._result
                             ],

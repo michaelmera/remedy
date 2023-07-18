@@ -1,8 +1,8 @@
 import logging
 
-logging.basicConfig(format="[%(levelname).1s] %(message)s")
+logging.basicConfig(format='[%(levelname).1s] %(message)s')
 
-log = logging.getLogger("remedy")
+log = logging.getLogger('remedy')
 
 
 def deepupdate(d, u):

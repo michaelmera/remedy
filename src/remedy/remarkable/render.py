@@ -1,32 +1,30 @@
 # from remedy import *
 
-from PyQt5.QtWidgets import (
-    QGraphicsRectItem,
-    QGraphicsPathItem,
-    QGraphicsItem,
-    QGraphicsScene,
-    QGraphicsPixmapItem,
-)
+import time
+from itertools import groupby
+
+from PyQt5.QtCore import QPointF, Qt
 from PyQt5.QtGui import (
+    QBrush,
     QImage,
     QPainter,
-    QBrush,
-    QTransform,
-    QPen,
-    QPainterPathStroker,
     QPainterPath,
+    QPainterPathStroker,
+    QPen,
     QPixmap,
+    QTransform,
 )
-from PyQt5.QtCore import Qt, QPointF
+from PyQt5.QtWidgets import (
+    QGraphicsItem,
+    QGraphicsPathItem,
+    QGraphicsPixmapItem,
+    QGraphicsRectItem,
+    QGraphicsScene,
+)
 
 import remedy.remarkable.constants as rm
 from remedy.remarkable.palette import *
-
-from itertools import groupby
-
-import time
 from remedy.utils import log
-
 
 QUICK_ERASER = 0
 IGNORE_ERASER = 1
@@ -36,10 +34,10 @@ AUTO_ERASER_IGNORE = 4
 AUTO_ERASER_ACCURATE = 5
 
 ERASER_MODE = {
-    "quick": QUICK_ERASER,
-    "ignore": IGNORE_ERASER,
-    "accurate": ACCURATE_ERASER,
-    "auto": AUTO_ERASER,
+    'quick': QUICK_ERASER,
+    'ignore': IGNORE_ERASER,
+    'accurate': ACCURATE_ERASER,
+    'auto': AUTO_ERASER,
 }
 
 
@@ -235,7 +233,7 @@ class PageGraphicsItem(QGraphicsRectItem):
         if simpl is None:
             simplify = 0
             log.warning(
-                "Simplification parameters ignored since the simplification library is not installed"
+                'Simplification parameters ignored since the simplification library is not installed'
             )
 
         noPen = QPen(Qt.PenStyle.NoPen)
@@ -260,25 +258,25 @@ class PageGraphicsItem(QGraphicsRectItem):
                 continue
             if (
                 l.highlights
-                and l.name + "/highlights" not in exclude_layers
-                and str(li + 1) + "/highlights" not in exclude_layers
+                and l.name + '/highlights' not in exclude_layers
+                and str(li + 1) + '/highlights' not in exclude_layers
             ):
                 # then
                 h = QGraphicsRectItem(self)
                 h.setPen(QPen(Qt.PenStyle.NoPen))
                 for hi in l.highlights:
-                    hcolor = hi.get("color", 1)
-                    for r in hi.get("rects", []):
+                    hcolor = hi.get('color', 1)
+                    for r in hi.get('rects', []):
                         ri = QGraphicsRectItemD(
-                            r.get("x", 0),
-                            r.get("y", 0),
-                            r.get("width", 0),
-                            r.get("height", 0),
+                            r.get('x', 0),
+                            r.get('y', 0),
+                            r.get('width', 0),
+                            r.get('height', 0),
                             h,
                         )
                         ri.setPen(QPen(Qt.PenStyle.NoPen))
                         ri.setBrush(palette.highlight(hcolor))
-                        ri.setToolTip(hi.get("text", ""))
+                        ri.setToolTip(hi.get('text', ''))
             group = QGraphicsPathItem()
             group.setPen(noPen)
             if eraser_mode >= AUTO_ERASER:
@@ -297,7 +295,7 @@ class PageGraphicsItem(QGraphicsRectItem):
                     color = palette.colorFor(tool, k.color)
                     if color is None:
                         log.error(
-                            "Tool %s Color %s not defined",
+                            'Tool %s Color %s not defined',
                             rm.TOOL_NAME.get(tool, tool),
                             k.color,
                         )
@@ -354,10 +352,10 @@ class PageGraphicsItem(QGraphicsRectItem):
                     for s in k.segments[1:]:
                         subarea.lineTo(s.x, s.y)
                     subarea = eraserStroker.createStroke(subarea)
-                    log.debug("A: %f", time.perf_counter() - T1)
+                    log.debug('A: %f', time.perf_counter() - T1)
                     T1 = time.perf_counter()
                     subarea = subarea.simplified()  # this is expensive
-                    log.debug("B: %f", time.perf_counter() - T1)
+                    log.debug('B: %f', time.perf_counter() - T1)
                     T1 = time.perf_counter()
                     # area = fullPageClip.subtracted(subarea)  # this alternative is also expensive
                     area.addPath(subarea)
@@ -433,7 +431,7 @@ class PageGraphicsItem(QGraphicsRectItem):
                                         QColor(int(p * 255), int(p * 255), int(p * 255))
                                     )
                                 else:
-                                    pen.setColor(palette.get("black"))
+                                    pen.setColor(palette.get('black'))
                             if tool == rm.HIGHLIGHTER_TOOL:  # and k.color != 1:
                                 PathItem = QGraphicsPathItemD
                             else:
@@ -473,7 +471,7 @@ def BarePageScene(page, parent=None, include_base_layer=True, orientation=None, 
     scene = QGraphicsScene(parent=parent)
     r = scene.addRect(0, 0, rm.WIDTH, rm.HEIGHT)
     r.setFlag(QGraphicsItem.GraphicsItemFlag.ItemClipsChildrenToShape)
-    if page.background and page.background.name != "Blank" and include_base_layer:
+    if page.background and page.background.name != 'Blank' and include_base_layer:
         img = pixmapOfBackground(page.background)
         if img:
             QGraphicsPixmapItem(img, r)

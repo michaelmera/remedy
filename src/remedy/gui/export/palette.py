@@ -1,26 +1,24 @@
-from remedy import *
-
+from PyQt5.QtCore import QPoint, QRect, QSize, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QPainter
-from PyQt5.QtWidgets import QWidget, QColorDialog, QHBoxLayout, QApplication, QComboBox
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSize, QRect, QPoint
+from PyQt5.QtWidgets import QApplication, QColorDialog, QComboBox, QHBoxLayout, QWidget
 
+from remedy import *
 from remedy.remarkable.constants import COLORS
 from remedy.remarkable.palette import Palette
-
 from remedy.utils import log
 
 PALETTE_ORDER = [
-    ["black", "gray", "white"],
-    ["red", "blue"],
-    ["highlight", "yellow", "green", "pink", "blend_gray"],
+    ['black', 'gray', 'white'],
+    ['red', 'blue'],
+    ['highlight', 'yellow', 'green', 'pink', 'blend_gray'],
 ]
 
 COLOR_TITLES = {
-    "highlight": "Old-style Highlighter",
-    "yellow": "Highlighter Yellow",
-    "green": "Highlighter Green",
-    "pink": "Highlighter Pink",
-    "blend_gray": "Highlighter Gray",
+    'highlight': 'Old-style Highlighter',
+    'yellow': 'Highlighter Yellow',
+    'green': 'Highlighter Green',
+    'pink': 'Highlighter Pink',
+    'blend_gray': 'Highlighter Gray',
 }
 
 
@@ -125,7 +123,7 @@ class PaletteBar(QWidget):
 
 class PaletteSelector(QWidget):
     def __init__(
-        self, *args, palettes=None, palette="default", editable=True, **kwargs
+        self, *args, palettes=None, palette='default', editable=True, **kwargs
     ):
         super().__init__(*args, **kwargs)
         if palettes is None:
@@ -143,7 +141,7 @@ class PaletteSelector(QWidget):
 
         if editable:
             self.custom = Palette()
-            self.selector.addItem("Custom...", self.custom)
+            self.selector.addItem('Custom...', self.custom)
             if name is None:
                 self.selector.setCurrentIndex(self.selector.count() - 1)
             self.selector.activated.connect(self._onSelect)

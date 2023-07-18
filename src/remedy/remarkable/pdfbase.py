@@ -1,11 +1,10 @@
-from remedy.remarkable.constants import *
+import time
 from threading import RLock
-
-from remedy.utils import log
 
 from PyQt5.QtGui import QImage
 
-import time
+from remedy.remarkable.constants import *
+from remedy.utils import log
 
 NO_RENDERER = 0
 MUPDF = 1
@@ -89,7 +88,7 @@ if RENDERER == MUPDF:
                 doc = self._entry.retrieveBaseDocument()
                 if doc is None:
                     log.warning(
-                        "Base document for %s could not be found", self._entry.uid
+                        'Base document for %s could not be found', self._entry.uid
                     )
                 else:
                     self._pdfDoc = fitz.open(doc)
@@ -143,7 +142,7 @@ elif RENDERER == POPPLER:
                     doc = self._entry.retrieveBaseDocument()
                     if doc is None:
                         log.warning(
-                            "Base document for %s could not be found", self._entry.uid
+                            'Base document for %s could not be found', self._entry.uid
                         )
                     else:
                         self._pdfDoc = Poppler.Document.load(doc)

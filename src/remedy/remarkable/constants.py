@@ -61,70 +61,70 @@ TOOL_ID = {
 
 # name to normalised id
 TOOL_NAME_ID = {
-    "brush": BRUSH_TOOL,
-    "mech_pencil": MECH_PENCIL_TOOL,
-    "pencil": PENCIL_TOOL,
-    "ballpoint": BALLPOINT_TOOL,
-    "marker": MARKER_TOOL,
-    "fineliner": FINELINER_TOOL,
-    "highlighter": HIGHLIGHTER_TOOL,
-    "eraser": ERASER_TOOL,
-    "erase_area": ERASE_AREA_TOOL,
-    "calligraphy": CALLIGRAPHY_TOOL,
+    'brush': BRUSH_TOOL,
+    'mech_pencil': MECH_PENCIL_TOOL,
+    'pencil': PENCIL_TOOL,
+    'ballpoint': BALLPOINT_TOOL,
+    'marker': MARKER_TOOL,
+    'fineliner': FINELINER_TOOL,
+    'highlighter': HIGHLIGHTER_TOOL,
+    'eraser': ERASER_TOOL,
+    'erase_area': ERASE_AREA_TOOL,
+    'calligraphy': CALLIGRAPHY_TOOL,
 }
 
 # normalised id to name
 TOOL_NAME = {
-    BRUSH_TOOL: "brush",
-    MECH_PENCIL_TOOL: "mech_pencil",
-    PENCIL_TOOL: "pencil",
-    BALLPOINT_TOOL: "ballpoint",
-    MARKER_TOOL: "marker",
-    FINELINER_TOOL: "fineliner",
-    HIGHLIGHTER_TOOL: "highlighter",
-    ERASER_TOOL: "eraser",
-    ERASE_AREA_TOOL: "erase_area",
-    CALLIGRAPHY_TOOL: "calligraphy",
+    BRUSH_TOOL: 'brush',
+    MECH_PENCIL_TOOL: 'mech_pencil',
+    PENCIL_TOOL: 'pencil',
+    BALLPOINT_TOOL: 'ballpoint',
+    MARKER_TOOL: 'marker',
+    FINELINER_TOOL: 'fineliner',
+    HIGHLIGHTER_TOOL: 'highlighter',
+    ERASER_TOOL: 'eraser',
+    ERASE_AREA_TOOL: 'erase_area',
+    CALLIGRAPHY_TOOL: 'calligraphy',
 }
 
 TOOL_LABEL = {
-    "brush": "Brush",
-    "pencil": "Pencil",
-    "ballpoint": "Ballpoint",
-    "marker": "Marker",
-    "fineliner": "Fineliner",
-    "highlighter": "Highlighter",
-    "eraser": "Eraser",
-    "mech_pencil": "Mechanical Pencil",
-    "erase_area": "Erase Area",
+    'brush': 'Brush',
+    'pencil': 'Pencil',
+    'ballpoint': 'Ballpoint',
+    'marker': 'Marker',
+    'fineliner': 'Fineliner',
+    'highlighter': 'Highlighter',
+    'eraser': 'Eraser',
+    'mech_pencil': 'Mechanical Pencil',
+    'erase_area': 'Erase Area',
 }
 
 COLORS = {
-    "black": "black",
-    "white": "white",
-    "gray": "#bbbbbb",
-    "blend_gray": "#40404040",  # based on RM pdf export
-    "red": "#d90707",
-    "blue": "#0062cc",
-    "highlight": "#7fffeb93",  # old highlighter (#AARRGGBB)
-    "yellow": "#fefd60",
-    "green": "#a9fa5c",
-    "pink": "#ff55cf",
+    'black': 'black',
+    'white': 'white',
+    'gray': '#bbbbbb',
+    'blend_gray': '#40404040',  # based on RM pdf export
+    'red': '#d90707',
+    'blue': '#0062cc',
+    'highlight': '#7fffeb93',  # old highlighter (#AARRGGBB)
+    'yellow': '#fefd60',
+    'green': '#a9fa5c',
+    'pink': '#ff55cf',
 }
 
 COLOR_CODES = {
-    0: "black",
-    1: "gray",
-    2: "white",
-    6: "blue",
-    7: "red",
+    0: 'black',
+    1: 'gray',
+    2: 'white',
+    6: 'blue',
+    7: 'red',
 }
 
 HIGHLIGHTER_CODES = {
-    0: "highlight",
-    1: "highlight",
-    3: "yellow",
-    4: "green",
-    5: "pink",
-    8: "blend_gray",
+    0: 'highlight',
+    1: 'highlight',
+    3: 'yellow',
+    4: 'green',
+    5: 'pink',
+    8: 'blend_gray',
 }

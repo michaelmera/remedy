@@ -1,28 +1,27 @@
+from PyQt5.QtCore import (
+    QAbstractListModel,
+    QAbstractTableModel,
+    QModelIndex,
+    QPoint,
+    QSize,
+    QSortFilterProxyModel,
+    Qt,
+    pyqtSignal,
+    pyqtSlot,
+)
 from PyQt5.QtGui import QContextMenuEvent, QIcon, QKeySequence
 from PyQt5.QtWidgets import (
-    QWidget,
-    QTreeView,
-    QHeaderView,
-    QMenu,
     QHBoxLayout,
+    QHeaderView,
     QLineEdit,
+    QMenu,
+    QTreeView,
+    QWidget,
 )
-from PyQt5.QtCore import (
-    pyqtSlot,
-    pyqtSignal,
-    Qt,
-    QAbstractTableModel,
-    QAbstractListModel,
-    QSortFilterProxyModel,
-    QModelIndex,
-    QSize,
-    QPoint,
-)
-
-from remedy.utils import log
 
 from remedy.gui.browser.delegates import PinnedDelegate
 from remedy.remarkable.metadata import RemarkableError
+from remedy.utils import log
 
 ### This proxy can be attached to the model of a DocTree to flatten the hierarchy
 # class FlatRemarkableProxyModel(QAbstractProxyModel):
@@ -59,12 +58,12 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
         index.signals.newEntryComplete.connect(self.newEntry)
         index.signals.updateEntryComplete.connect(self.updateEntry)
         self._icon = {
-            "trash": QIcon(":assets/24/trash.svg"),
-            "folder": QIcon(":assets/24/folder.svg"),
-            "pdf": QIcon(":assets/24/pdf.svg"),
-            "epub": QIcon(":assets/24/epub.svg"),
-            "notebook": QIcon(":assets/24/notebook.svg"),
-            "unknown": QIcon(":assets/24/unknown.svg"),
+            'trash': QIcon(':assets/24/trash.svg'),
+            'folder': QIcon(':assets/24/folder.svg'),
+            'pdf': QIcon(':assets/24/pdf.svg'),
+            'epub': QIcon(':assets/24/epub.svg'),
+            'notebook': QIcon(':assets/24/notebook.svg'),
+            'unknown': QIcon(':assets/24/unknown.svg'),
         }
         self._filterName = QSortFilterProxyModel()
         self._filterType = QSortFilterProxyModel()
@@ -125,9 +124,9 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
         elif role == Qt.ItemDataRole.UserRole + 1:
             return entry.typeName()
         elif role == Qt.ItemDataRole.UserRole + 2:
-            return "1" if entry.isIndirectlyDeleted() else "0"
+            return '1' if entry.isIndirectlyDeleted() else '0'
         elif role == Qt.ItemDataRole.UserRole + 3:
-            return "1" if entry.pinned else "0"
+            return '1' if entry.pinned else '0'
 
         if index.column() == 0:  # name
             if role == Qt.ItemDataRole.DisplayRole:
@@ -136,7 +135,7 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
                 return self._icon.get(entry.typeName())
         elif index.column() == 1:  # pinned
             if role == Qt.ItemDataRole.DisplayRole:
-                return "1" if entry.pinned else "0"
+                return '1' if entry.pinned else '0'
         elif index.column() == 2:  # updated
             if role == Qt.ItemDataRole.DisplayRole:
                 return entry.updatedOn()
@@ -156,22 +155,22 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
     def headerData(self, section, orientation, role):
         if role == Qt.ItemDataRole.DisplayRole:
             if section == 0:
-                return "Name"
+                return 'Name'
             elif section == 1:
-                return ""
+                return ''
             elif section == 2:
-                return "Updated"
+                return 'Updated'
             elif section == 3:
-                return "Type"
+                return 'Type'
 
     def proxy(self):
         return self._topProxy
 
     def filterTrash(self, b):
-        self._filterTrash.setFilterFixedString("0" if b else None)
+        self._filterTrash.setFilterFixedString('0' if b else None)
 
     def filterPinned(self, b):
-        self._filterPinned.setFilterFixedString("1" if b else None)
+        self._filterPinned.setFilterFixedString('1' if b else None)
 
     def filterName(self, query):
         self._filterName.setFilterWildcard(query)
@@ -236,49 +235,49 @@ class SearchResults(QTreeView):
         self.resizeColumnToContents(1)
 
         self._optionsMenu = menu = QMenu()
-        self._caseToggle = act = menu.addAction("Case sensitive")
+        self._caseToggle = act = menu.addAction('Case sensitive')
         act.setCheckable(True)
-        act.setIcon(QIcon(":assets/16/case.svg"))
+        act.setIcon(QIcon(':assets/16/case.svg'))
         act.setIconVisibleInMenu(True)
         act.triggered.connect(self.setCaseSensitivity)
         # act.setChecked(True)
         # act.setChecked(False)
         menu.addSeparator()
-        self._pdfToggle = act = menu.addAction("PDF")
-        act.setIcon(QIcon(":assets/16/pdf.svg"))
+        self._pdfToggle = act = menu.addAction('PDF')
+        act.setIcon(QIcon(':assets/16/pdf.svg'))
         act.setIconVisibleInMenu(True)
         act.setCheckable(True)
-        act.triggered.connect(lambda c: self.showType("pdf", c))
+        act.triggered.connect(lambda c: self.showType('pdf', c))
         # act.setChecked(True)
-        self._epubToggle = act = menu.addAction("EPUB")
-        act.setIcon(QIcon(":assets/16/epub.svg"))
+        self._epubToggle = act = menu.addAction('EPUB')
+        act.setIcon(QIcon(':assets/16/epub.svg'))
         act.setIconVisibleInMenu(True)
         act.setCheckable(True)
-        act.triggered.connect(lambda c: self.showType("epub", c))
+        act.triggered.connect(lambda c: self.showType('epub', c))
         # act.setChecked(True)
-        self._notebookToggle = act = menu.addAction("Notebook")
-        act.setIcon(QIcon(":assets/16/notebook.svg"))
-        act.triggered.connect(lambda c: self.showType("notebook", c))
+        self._notebookToggle = act = menu.addAction('Notebook')
+        act.setIcon(QIcon(':assets/16/notebook.svg'))
+        act.triggered.connect(lambda c: self.showType('notebook', c))
         act.setIconVisibleInMenu(True)
         act.setCheckable(True)
         # act.setChecked(True)
-        self._folderToggle = act = menu.addAction("Folder")
-        act.setIcon(QIcon(":assets/16/folder.svg"))
-        act.triggered.connect(lambda c: self.showType("folder", c))
+        self._folderToggle = act = menu.addAction('Folder')
+        act.setIcon(QIcon(':assets/16/folder.svg'))
+        act.triggered.connect(lambda c: self.showType('folder', c))
         act.setIconVisibleInMenu(True)
         act.setCheckable(True)
         # act.setChecked(True)
         menu.addSeparator()
-        self._pinnedToggle = act = menu.addAction("Only Favourites")
-        act.setIcon(QIcon(":assets/symbolic/starred.svg"))
+        self._pinnedToggle = act = menu.addAction('Only Favourites')
+        act.setIcon(QIcon(':assets/symbolic/starred.svg'))
         act.triggered.connect(lambda c: self.showPinnedOnly(c))
         act.setIconVisibleInMenu(True)
         act.setCheckable(True)
         # act.setChecked(False)
         menu.addSeparator()
-        self._trashToggle = act = menu.addAction("Trash")
+        self._trashToggle = act = menu.addAction('Trash')
         act.setCheckable(True)
-        act.setIcon(QIcon(":assets/16/trash.svg"))
+        act.setIcon(QIcon(':assets/16/trash.svg'))
         act.setIconVisibleInMenu(True)
         act.triggered.connect(self.showDeleted)
         # act.setChecked(True) # to trigger change signal
@@ -300,7 +299,7 @@ class SearchResults(QTreeView):
         if not txt:
             txt = None
         if self._query != txt:
-            log.debug("Setting query %s", txt)
+            log.debug('Setting query %s', txt)
             self._query = txt
             self._index_model.filterName(txt)
             self.queryChanged.emit(txt)
@@ -321,10 +320,10 @@ class SearchResults(QTreeView):
         self.showType(ty, True)
 
     def showAllTypes(self):
-        self.entryTypes.add("epub")
-        self.entryTypes.add("pdf")
-        self.entryTypes.add("folder")
-        self.entryTypes.add("notebook")
+        self.entryTypes.add('epub')
+        self.entryTypes.add('pdf')
+        self.entryTypes.add('folder')
+        self.entryTypes.add('notebook')
         self._typeRefresh()
 
     def showType(self, ty, b):
@@ -335,12 +334,12 @@ class SearchResults(QTreeView):
         self._typeRefresh()
 
     def _typeRefresh(self):
-        t = "|".join(self.entryTypes) or "none"
+        t = '|'.join(self.entryTypes) or 'none'
         self._index_model.filterType(t)
-        self._epubToggle.setChecked("epub" in self.entryTypes)
-        self._pdfToggle.setChecked("pdf" in self.entryTypes)
-        self._folderToggle.setChecked("folder" in self.entryTypes)
-        self._notebookToggle.setChecked("notebook" in self.entryTypes)
+        self._epubToggle.setChecked('epub' in self.entryTypes)
+        self._pdfToggle.setChecked('pdf' in self.entryTypes)
+        self._folderToggle.setChecked('folder' in self.entryTypes)
+        self._notebookToggle.setChecked('notebook' in self.entryTypes)
 
     def selectionChanged(self, sel, desel):
         QTreeView.selectionChanged(self, sel, desel)
@@ -397,17 +396,17 @@ class SearchBar(QWidget):
         layout.addStretch(1)
         self.search = search = QLineEdit()
         self.searchAction = search.addAction(
-            QIcon(":assets/symbolic/search.svg"), QLineEdit.LeadingPosition
+            QIcon(':assets/symbolic/search.svg'), QLineEdit.LeadingPosition
         )
         self.optionsAction = search.addAction(
-            QIcon(":assets/symbolic/options.svg"), QLineEdit.TrailingPosition
+            QIcon(':assets/symbolic/options.svg'), QLineEdit.TrailingPosition
         )
         self.optionsAction.triggered.connect(self.popupOptions)
         self.optionsAction.setVisible(False)
         self.clearAction = search.addAction(
-            QIcon(":assets/symbolic/clear.svg"), QLineEdit.TrailingPosition
+            QIcon(':assets/symbolic/clear.svg'), QLineEdit.TrailingPosition
         )
-        search.setPlaceholderText("Search")
+        search.setPlaceholderText('Search')
         layout.addWidget(search, 1)
         # self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Preferred)
 
@@ -435,7 +434,7 @@ class SearchBar(QWidget):
 
     def setQuery(self, txt=None):
         if self.search.text() != txt:
-            self.search.setText(txt or "")
+            self.search.setText(txt or '')
 
     def setOptionsMenu(self, menu=None):
         self._optionsMenu = menu

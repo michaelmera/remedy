@@ -78,8 +78,23 @@ python = ["3.10", "3.11"]
 all = "pytest tests/units"
 
 [tool.black]
+skip-string-normalization = true
 target-version = ['py310','py311']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = "C0103,C0114,C0115,C0116,C0203,C0301,C0413"
+
+[tool.pylint.format]
+max-line-length="88"
 
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = "tests/units"
+norecursedirs = ["docs", "*.egg-info", ".git", ".tox", "__pycache__"]

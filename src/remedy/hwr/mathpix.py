@@ -1,17 +1,15 @@
-import sys
 import base64
-import requests
 import json
+import sys
 
+import requests
+from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 
 from remedy.remarkable.constants import *
-from remedy.remarkable.render import BarePageScene, IGNORE_ERASER
-
+from remedy.remarkable.render import IGNORE_ERASER, BarePageScene
 from remedy.utils import log
-
 
 try:
     from simplification.cutil import simplify_coords
@@ -35,7 +33,7 @@ ARTISTIC_TOOLS = {
 
 class MathPixError(Exception):
     def __init__(self, result):
-        Exception.__init__(self, result.get("error"))
+        Exception.__init__(self, result.get('error'))
         self.result = result
 
 
@@ -47,28 +45,28 @@ def mathpixRaster(page, app_id, app_key, scale=0.5, **opt):
     painter.setRenderHint(QPainter.Antialiasing)
     s.render(painter)
     painter.end()
-    temp = QTemporaryFile(QDir.tempPath() + "/XXXXXX.jpg")
+    temp = QTemporaryFile(QDir.tempPath() + '/XXXXXX.jpg')
     img.save(temp)
     ## debug:
     # QDesktopServices.openUrl(QUrl("file://" + temp.fileName()))
     r = requests.post(
-        "https://api.mathpix.com/v3/text",
-        files={"file": open(temp.fileName(), "rb")},
+        'https://api.mathpix.com/v3/text',
+        files={'file': open(temp.fileName(), 'rb')},
         data={
-            "options_json": json.dumps(
+            'options_json': json.dumps(
                 {
-                    "formats": ["text"],
-                    "math_inline_delimiters": ["$", "$"],
+                    'formats': ['text'],
+                    'math_inline_delimiters': ['$', '$'],
                 }
             )
         },
-        headers={"app_id": app_id, "app_key": app_key},
+        headers={'app_id': app_id, 'app_key': app_key},
     )
     result = r.json()
-    if "error" in result:
-        i = result["error_info"]["id"]
-        if i == "image_no_content":
-            return {"text": ""}
+    if 'error' in result:
+        i = result['error_info']['id']
+        if i == 'image_no_content':
+            return {'text': ''}
         raise MathPixError(result)
     return result
 
@@ -88,7 +86,7 @@ def mathpixStrokes(
     if simpl is None:
         simplify = False
         log.warning(
-            "Simplification parameters ignored since the simplification library is not installed"
+            'Simplification parameters ignored since the simplification library is not installed'
         )
     x = []
     y = []
@@ -102,23 +100,23 @@ def mathpixStrokes(
                 else:
                     x.append([s.x for s in k.segments])
                     y.append([s.y for s in k.segments])
-    data = json.dumps({"strokes": {"strokes": {"x": x, "y": y}}})
+    data = json.dumps({'strokes': {'strokes': {'x': x, 'y': y}}})
     if len(data) > 512000:
         log.warning(
-            "Mathpix: too many strokes for a single request: %dKb  (max 512Kb).",
+            'Mathpix: too many strokes for a single request: %dKb  (max 512Kb).',
             len(data) // 1000,
         )
     r = requests.post(
-        "https://api.mathpix.com/v3/strokes",
+        'https://api.mathpix.com/v3/strokes',
         data=data,
         headers={
-            "app_id": app_id,
-            "app_key": app_key,
-            "Content-type": "application/json",
+            'app_id': app_id,
+            'app_key': app_key,
+            'Content-type': 'application/json',
         },
     )
     result = r.json()
-    if "error" in result:
+    if 'error' in result:
         raise MathPixError(result)
     return result
 

@@ -1,11 +1,10 @@
-from PyQt5.QtCore import pyqtSignal, QObject
-
-from remedy.remarkable.metadata import *
-from remedy.remarkable.filesource import *
-
 from pathlib import Path
-
 from time import sleep
+
+from PyQt5.QtCore import QObject, pyqtSignal
+
+from remedy.remarkable.filesource import *
+from remedy.remarkable.metadata import *
 
 
 class QRemarkableIndexSignals(QObject):

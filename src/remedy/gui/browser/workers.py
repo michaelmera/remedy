@@ -1,4 +1,5 @@
 import traceback
+
 from PyQt5.QtCore import QRunnable, QThreadPool
 
 from remedy.utils import log
@@ -30,8 +31,8 @@ class NewEntryWorker(QRunnable):
 
     def _progress(self, *a):
         if self._cancel:
-            log.debug("Cancel of new entry upload requested")
-            raise NewEntryCancelled("Cancelled!")
+            log.debug('Cancel of new entry upload requested')
+            raise NewEntryCancelled('Cancelled!')
 
     def run(self):
         try:

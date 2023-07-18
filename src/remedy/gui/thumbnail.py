@@ -1,11 +1,9 @@
-from remedy import *
-
+from PyQt5.QtCore import QObject, QRunnable, Qt, pyqtSignal
 from PyQt5.QtGui import QImage, QPainter, QPen
-from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, Qt
 
 import remedy.remarkable.constants as rm
-from remedy.remarkable.render import BarePageScene, IGNORE_ERASER
-
+from remedy import *
+from remedy.remarkable.render import IGNORE_ERASER, BarePageScene
 from remedy.utils import log
 
 
@@ -25,7 +23,7 @@ class ThumbnailWorker(QRunnable):
         painter = None
         try:
             d = self.index.get(self.uid)
-            log.debug("Generating thumb for %s", d.name())
+            log.debug('Generating thumb for %s', d.name())
             page = d.getPage(d.cover())
             s = BarePageScene(
                 page,
@@ -42,7 +40,7 @@ class ThumbnailWorker(QRunnable):
             painter = QPainter(img)
             painter.setRenderHint(QPainter.Antialiasing)
             painter.setRenderHint(QPainter.SmoothPixmapTransform)
-            if page.background and page.background.name != "Blank":
+            if page.background and page.background.name != 'Blank':
                 bgf = page.background.retrieve()
                 if bgf:
                     bg = QImage(bgf)
@@ -58,7 +56,7 @@ class ThumbnailWorker(QRunnable):
             painter.drawRect(img.rect())
             self.signals.thumbReady.emit(self.uid, img)
         except Exception as e:
-            log.warning("Could not create thumbnail for %s [%s]", self.uid, e)
+            log.warning('Could not create thumbnail for %s [%s]', self.uid, e)
         finally:
             if painter:
                 painter.end()

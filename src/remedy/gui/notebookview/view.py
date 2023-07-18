@@ -1,82 +1,79 @@
-from remedy import *
+from os import path
 
 from PyQt5.QtCore import (
-    QRunnable,
-    pyqtSignal,
+    QEvent,
     QObject,
-    pyqtSlot,
+    QRunnable,
+    QSize,
     Qt,
     QThreadPool,
-    QEvent,
-    QSize,
+    pyqtSignal,
+    pyqtSlot,
 )
 from PyQt5.QtGui import (
-    QImage,
-    QIcon,
-    QPainter,
     QColor,
-    QPixmap,
+    QFont,
+    QIcon,
+    QImage,
     QKeySequence,
     QMovie,
-    QFont,
+    QPainter,
+    QPixmap,
 )
 from PyQt5.QtWidgets import (
-    QGraphicsRectItem,
-    QGraphicsView,
+    QAbstractScrollArea,
     QAction,
     QApplication,
-    QMenu,
-    QGraphicsScene,
     QGraphicsItem,
     QGraphicsPixmapItem,
-    QAbstractScrollArea,
-    QLabel,
     QGraphicsProxyWidget,
+    QGraphicsRectItem,
+    QGraphicsScene,
     QGraphicsSimpleTextItem,
+    QGraphicsView,
+    QLabel,
+    QMenu,
 )
 
 import remedy.remarkable.constants as rm
-
-from remedy.remarkable.render import PageGraphicsItem
+from remedy import *
 from remedy.gui.export import exportDocument
-
-from os import path
-
+from remedy.remarkable.render import PageGraphicsItem
 from remedy.utils import log
 
 
 class Actions:
     def __init__(self, parent=None):
-        self.export = QAction("Export document...", parent)
-        self.export.setIcon(QIcon(":assets/16/export.svg"))
+        self.export = QAction('Export document...', parent)
+        self.export.setIcon(QIcon(':assets/16/export.svg'))
         # TODO
-        self.reload = QAction("Reload", parent)
-        self.reload.setIcon(QIcon(":assets/16/reload.svg"))
+        self.reload = QAction('Reload', parent)
+        self.reload.setIcon(QIcon(':assets/16/reload.svg'))
         ###
-        self.prevPage = QAction("Previous Page", parent)
-        self.prevPage.setIcon(QIcon(":assets/16/go-previous.svg"))
-        self.prevMarkedPage = QAction("Previous Marked Page", parent)
-        self.prevMarkedPage.setIcon(QIcon(":assets/16/go-marked-previous.svg"))
-        self.nextPage = QAction("Next Page", parent)
-        self.nextPage.setIcon(QIcon(":assets/16/go-next.svg"))
-        self.nextMarkedPage = QAction("Next Marked Page", parent)
-        self.nextMarkedPage.setIcon(QIcon(":assets/16/go-marked-next.svg"))
-        self.firstPage = QAction("First Page", parent)
-        self.firstPage.setIcon(QIcon(":assets/16/go-first.svg"))
-        self.lastPage = QAction("Last Page", parent)
-        self.lastPage.setIcon(QIcon(":assets/16/go-last.svg"))
-        self.fitToView = QAction("Fit to view", parent, checkable=True)
-        self.fitToView.setIcon(QIcon(":assets/16/zoom-fit-best.svg"))
-        self.actualSize = QAction("Actual Size", parent)
-        self.actualSize.setIcon(QIcon(":assets/16/zoom-original.svg"))
-        self.zoomIn = QAction("Zoom In", parent)
-        self.zoomIn.setIcon(QIcon(":assets/16/zoom-in.svg"))
-        self.zoomOut = QAction("Zoom Out", parent)
-        self.zoomOut.setIcon(QIcon(":assets/16/zoom-out.svg"))
-        self.rotateCW = QAction("Rotate clockwise", parent)
-        self.rotateCW.setIcon(QIcon(":assets/16/rotate-cw.svg"))
-        self.rotateCCW = QAction("Rotate counter-clockwise", parent)
-        self.rotateCCW.setIcon(QIcon(":assets/16/rotate-ccw.svg"))
+        self.prevPage = QAction('Previous Page', parent)
+        self.prevPage.setIcon(QIcon(':assets/16/go-previous.svg'))
+        self.prevMarkedPage = QAction('Previous Marked Page', parent)
+        self.prevMarkedPage.setIcon(QIcon(':assets/16/go-marked-previous.svg'))
+        self.nextPage = QAction('Next Page', parent)
+        self.nextPage.setIcon(QIcon(':assets/16/go-next.svg'))
+        self.nextMarkedPage = QAction('Next Marked Page', parent)
+        self.nextMarkedPage.setIcon(QIcon(':assets/16/go-marked-next.svg'))
+        self.firstPage = QAction('First Page', parent)
+        self.firstPage.setIcon(QIcon(':assets/16/go-first.svg'))
+        self.lastPage = QAction('Last Page', parent)
+        self.lastPage.setIcon(QIcon(':assets/16/go-last.svg'))
+        self.fitToView = QAction('Fit to view', parent, checkable=True)
+        self.fitToView.setIcon(QIcon(':assets/16/zoom-fit-best.svg'))
+        self.actualSize = QAction('Actual Size', parent)
+        self.actualSize.setIcon(QIcon(':assets/16/zoom-original.svg'))
+        self.zoomIn = QAction('Zoom In', parent)
+        self.zoomIn.setIcon(QIcon(':assets/16/zoom-in.svg'))
+        self.zoomOut = QAction('Zoom Out', parent)
+        self.zoomOut.setIcon(QIcon(':assets/16/zoom-out.svg'))
+        self.rotateCW = QAction('Rotate clockwise', parent)
+        self.rotateCW.setIcon(QIcon(':assets/16/rotate-cw.svg'))
+        self.rotateCCW = QAction('Rotate counter-clockwise', parent)
+        self.rotateCCW.setIcon(QIcon(':assets/16/rotate-ccw.svg'))
 
 
 class NotebookView(QGraphicsView):
@@ -138,7 +135,7 @@ class NotebookView(QGraphicsView):
         self._loadPage(document.lastOpenedPage or 0)
 
         self.show()
-        if document.orientation == "landscape":
+        if document.orientation == 'landscape':
             self.rotateCW()
             self.resetSize.emit(WIDTH / HEIGHT)
         else:
@@ -205,7 +202,7 @@ class NotebookView(QGraphicsView):
     @pyqtSlot(Page, PageGraphicsItem, QImage)
     def pageReady(self, page, pitem, img):
         scene = self._page_cache[page.pageNum]
-        if page.background and page.background.name != "Blank":
+        if page.background and page.background.name != 'Blank':
             img = self.imageOfBackground(page.background)
             if img:
                 scene.baseItem = QGraphicsPixmapItem(QPixmap(img), scene.pageRect)
@@ -428,7 +425,7 @@ class NotebookView(QGraphicsView):
                     self._tolerance[i] -= 0.25
             else:
                 self._tolerance[i] += 0.25
-            log.info("Tolerance: %g", self._tolerance[i])
+            log.info('Tolerance: %g', self._tolerance[i])
             self.makePageScene(
                 i, replace=True, simplify=self._tolerance[i], smoothen=self._smoothen
             )
@@ -457,7 +454,7 @@ class AsyncPageLoad(QRunnable):
     def run(self):
         page = self.document.getPage(self.pageNum)
         # try:
-        if page.background and page.background.name != "Blank":
+        if page.background and page.background.name != 'Blank':
             page.background.retrieve()
             img = QImage()
             # images are cached
@@ -473,7 +470,7 @@ class QLoadingItem(QGraphicsRectItem):
         QGraphicsItem.__init__(self, parent=parent)
         self.setFlag(QGraphicsItem.ItemIgnoresTransformations)
         ###
-        img = QMovie(":assets/loading.gif")
+        img = QMovie(':assets/loading.gif')
         imgw = QLabel()
         imgw.setMovie(img)
         img.setScaledSize(QSize(40, 40))
@@ -483,7 +480,7 @@ class QLoadingItem(QGraphicsRectItem):
         ###
         font = QFont()
         font.setPointSize(14)
-        lbl = QGraphicsSimpleTextItem("Loading", self)
+        lbl = QGraphicsSimpleTextItem('Loading', self)
         lbl.setFont(font)
         lbl.setBrush(Qt.GlobalColor.gray)
         lblr = lbl.boundingRect()
@@ -491,4 +488,4 @@ class QLoadingItem(QGraphicsRectItem):
         # lbl.setPos(-lblr.width()/2,-lblr.height()/2)
         spinner.setPos(-20, -20)
         # spinner.setPos(-lblr.width()/2-40,-15)
-        lbl.setText("Loading…")
+        lbl.setText('Loading…')

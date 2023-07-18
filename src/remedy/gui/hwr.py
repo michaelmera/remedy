@@ -1,9 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPlainTextEdit, QMessageBox
+from PyQt5.QtCore import QObject, QRunnable, QSize, QThreadPool, pyqtSignal
 from PyQt5.QtGui import QMovie
-from PyQt5.QtCore import pyqtSignal, QRunnable, QObject, QSize, QThreadPool
+from PyQt5.QtWidgets import QMessageBox, QPlainTextEdit, QVBoxLayout, QWidget
 
-from remedy.hwr.mathpix import mathpixRaster, MathPixError
-
+from remedy.hwr.mathpix import MathPixError, mathpixRaster
 from remedy.utils import log
 
 
@@ -30,11 +29,11 @@ class HWRWorker(QRunnable):
 class HWRResults(QWidget):
     def __init__(self, page, opt, parent=None):
         QWidget.__init__(self, parent)
-        self.gif = QMovie(":assets/recognising.gif", parent=self)
+        self.gif = QMovie(':assets/recognising.gif', parent=self)
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.textbox = QPlainTextEdit()
-        self.textbox.setPlaceholderText("Loading...")
+        self.textbox.setPlaceholderText('Loading...')
         self.layout().addWidget(self.textbox)
         # self.spinner = QLabel()
         # self.layout().addWidget(self.spinner)
@@ -50,26 +49,26 @@ class HWRResults(QWidget):
     def onDone(self, result):
         # self.gif.stop()
         # self.spinner.hide()
-        self.textbox.document().setPlainText(result.get("text", ""))
+        self.textbox.document().setPlainText(result.get('text', ''))
         self.layout().addWidget(self.textbox)
 
     def onError(self, exc):
         if isinstance(exc, MathPixError):
-            log.error("Mathpix: %s", exc.result)
+            log.error('Mathpix: %s', exc.result)
             QMessageBox.critical(
                 self,
-                "MathPix Error",
-                "The request to MathPix was unsuccessful:\n\n%s"
-                % exc.result.get("error"),
+                'MathPix Error',
+                'The request to MathPix was unsuccessful:\n\n%s'
+                % exc.result.get('error'),
             )
         else:
-            log.error("Mathpix: %s", exc)
+            log.error('Mathpix: %s', exc)
             QMessageBox.critical(
                 self,
-                "Error",
-                "Please check you properly configured your mathpix API keys "
-                "in the configuration file.\n\n"
-                "Instructions to obtain API keys at\n"
-                "https://mathpix.com/ocr",
+                'Error',
+                'Please check you properly configured your mathpix API keys '
+                'in the configuration file.\n\n'
+                'Instructions to obtain API keys at\n'
+                'https://mathpix.com/ocr',
             )
         self.close()

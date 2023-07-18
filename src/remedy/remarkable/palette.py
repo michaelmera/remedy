@@ -1,5 +1,6 @@
-from remedy.remarkable.constants import *
 from PyQt5.QtGui import QColor
+
+from remedy.remarkable.constants import *
 
 # DEFAULT_COLORS = {
 #   0: Qt.black,
@@ -34,7 +35,7 @@ class Palette:
         return self._name
 
     def title(self):
-        return self._name.capitalize().replace("_", " ")
+        return self._name.capitalize().replace('_', ' ')
 
     def get(self, name):
         return self._palette.get(name)
@@ -72,8 +73,8 @@ class PalettePresets:
         self._palettes = {}
         for name, pal in palettes.items():
             self._palettes[name] = Palette(pal, name)
-        if "default" not in self._palettes:
-            self._palettes["default"] = Palette(name="default")
+        if 'default' not in self._palettes:
+            self._palettes['default'] = Palette(name='default')
 
     def items(self):
         yield from self._palettes.items()
@@ -84,7 +85,7 @@ class PalettePresets:
         elif pal in self._palettes:
             return self._palettes[pal]
         else:
-            return self._palettes["default"]
+            return self._palettes['default']
 
     def toDict(self):
         return {name: pal.toDict() for name, pal in self._palettes.items()}

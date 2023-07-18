@@ -151,7 +151,7 @@ Obviously, this source is read-only: you cannot upload PDFs to it.
 The SSH-type source connects to the tabled via SSH.
 The tablet needs to be either plugged via USB
 (in which case you should set `"host": "10.11.99.1"`)
-or via WiFi, in which case you need to find the address assigned to the tablet or you can use the hostname "reMarkable" 
+or via WiFi, in which case you need to find the address assigned to the tablet or you can use the hostname "reMarkable"
 (if your router supports hostname resolution) in the "About" section of the tablet's settings.
 Most settings are optional, you can also use `password` instead of `key`.
 The option "host" falls back to the USB configuration "10.11.99.1".
@@ -267,13 +267,13 @@ The `RENDER_OPTIONS` settings can set the following keys:
   High tolerance means strokes will be more approximate.
   Requires the `simplification` library.
   Default is `0` (no simplification).
-  
+
 - `smoothen`
   can be set to `true` or `false`. Default is `false`.
   If set, the renderer would produce beziers interpolating the original strokes.
   Can be used in combination with `simplify` to obtain smaller files with smooth lines.
   The feature is still experimental.
-  
+
 - `eraser_mode`
   can be set to either `"accurate"`, `"ignore"`, `"quick"`, or `"auto"`. Default is `"auto"`.
 
@@ -288,7 +288,7 @@ The `RENDER_OPTIONS` settings can set the following keys:
     This results in quicker rendering times but inaccurate results:
     the layers below the strokes would be covered by the eraser which is undesirable.
   * `"auto"` will use `"ignore"` and automatically switch to `"accurate"` when the page contains strokes that may need the accurate method to be rendered precisely (e.g. with very wide strokes).
-  
+
 - `thickness_scale`
   controls the ratio of the thickness of lines that should actually be rendered (1 is full scale).
 

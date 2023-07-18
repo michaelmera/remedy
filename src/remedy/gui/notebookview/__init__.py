@@ -1,20 +1,18 @@
 # from remedy import *
 
-from PyQt5.QtWidgets import QMainWindow, QAction, QToolBar, QLineEdit, QApplication
+from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtWidgets import QAction, QApplication, QLineEdit, QMainWindow, QToolBar
 
-
-from remedy.remarkable.constants import *
+from remedy.gui.export import exportDocument, webUIExport
 from remedy.gui.hwr import HWRResults
-
 from remedy.gui.notebookview.view import *
-from remedy.gui.export import webUIExport, exportDocument
-
-# from os import path
+from remedy.remarkable.constants import *
 
 # import time
 from remedy.utils import log
+
+# from os import path
 
 
 # class PageThumbItem(QListWidgetItem):
@@ -32,16 +30,16 @@ class NotebookViewer(QMainWindow):
 
         self.view = NotebookView(document)
 
-        self.actionWebUI = QAction("PDF from WebUI...", self)
-        self.actionWebUI.setIcon(QIcon(":assets/16/webui.svg"))
+        self.actionWebUI = QAction('PDF from WebUI...', self)
+        self.actionWebUI.setIcon(QIcon(':assets/16/webui.svg'))
         self.actionWebUI.triggered.connect(self.webUIExport)
-        self.actionTextRec = QAction("Convert page with Mathpix...", self)
-        self.actionTextRec.setIcon(QIcon(":assets/16/text.svg"))
+        self.actionTextRec = QAction('Convert page with Mathpix...', self)
+        self.actionTextRec.setIcon(QIcon(':assets/16/text.svg'))
         self.actionTextRec.triggered.connect(self.mathpix)
 
         self.setCentralWidget(self.view)
         self.setUnifiedTitleAndToolBarOnMac(True)
-        tb = QToolBar("Preview")
+        tb = QToolBar('Preview')
         a = self.view.actions
         tb.addAction(a.export)
         tb.addAction(self.actionWebUI)
@@ -53,7 +51,7 @@ class NotebookViewer(QMainWindow):
             tb.addAction(a.prevMarkedPage)
         tb.addAction(a.prevPage)
         self.pageNumEdit = QLineEdit()
-        self.pageNumEdit.setText("1")
+        self.pageNumEdit.setText('1')
         # self.pageNumEdit.setValidator(QIntValidator(0,100))
         self.pageNumEdit.setFixedWidth(50)
         self.pageNumEdit.setAlignment(
@@ -84,7 +82,7 @@ class NotebookViewer(QMainWindow):
 
         if not document.canRenderBase():
             self.statusBar().showMessage(
-                "The PDF document will not show in the preview, but will show in the exported PDF"
+                'The PDF document will not show in the preview, but will show in the exported PDF'
             )
 
         self.view.pageChanged.connect(self._onPageChange)
@@ -93,7 +91,7 @@ class NotebookViewer(QMainWindow):
     def _onPageChange(self, old, new):
         self.pageNumEdit.setText(str(new))
         self.setWindowTitle(
-            "%s - Page %d of %d"
+            '%s - Page %d of %d'
             % (
                 self.view.document().visibleName,
                 self.view.currentPageNum(),
@@ -125,7 +123,7 @@ class NotebookViewer(QMainWindow):
         w = HWRResults(page, opt)
         w.setParent(self, Qt.WindowType.WWindow)
         w.setWindowTitle(
-            "Handwriting recongition for page %d of %s"
+            'Handwriting recongition for page %d of %s'
             % (pageNum, self.view.document().visibleName)
         )
         w.show()

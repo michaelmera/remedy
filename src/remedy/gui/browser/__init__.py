@@ -1,32 +1,29 @@
+from pathlib import Path
+
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import (
-    QTreeWidgetItem,
     QAction,
-    QMainWindow,
     QActionGroup,
+    QInputDialog,
+    QMainWindow,
+    QSizePolicy,
     QSplitter,
     QStackedWidget,
-    QSizePolicy,
-    QInputDialog,
+    QTreeWidgetItem,
 )
-from PyQt5.QtCore import pyqtSlot
 
-
+import remedy.gui.resources
+from remedy.gui.browser.doctree import *
+from remedy.gui.browser.folderselect import *
+from remedy.gui.browser.info import InfoPanel
+from remedy.gui.browser.search import *
+from remedy.gui.browser.workers import *
+from remedy.gui.export import exportDocument, webUIExport
+from remedy.gui.highlights import *
+from remedy.gui.notebookview import *
 from remedy.gui.qmetadata import *
 from remedy.gui.thumbnail import ThumbnailWorker
-import remedy.gui.resources
-from remedy.gui.notebookview import *
-
 from remedy.utils import log
-
-from remedy.gui.export import webUIExport, exportDocument
-from remedy.gui.highlights import *
-from remedy.gui.browser.info import InfoPanel
-from remedy.gui.browser.doctree import *
-from remedy.gui.browser.workers import *
-from remedy.gui.browser.search import *
-from remedy.gui.browser.folderselect import *
-
-from pathlib import Path
 
 
 # I could have used QWidget.addAction to attach these to the tree/main window
@@ -37,75 +34,75 @@ class Actions:
 
     def __init__(self, parent=None, isLive=False):
         # if all non folders
-        self.preview = QAction("Open in viewer", parent)
-        self.preview.setShortcut("Ctrl+Enter")
+        self.preview = QAction('Open in viewer', parent)
+        self.preview.setShortcut('Ctrl+Enter')
         # if single pdf
-        self.openBaseDoc = QAction("Open base document", parent)
-        self.openBaseDoc.setShortcut("Ctrl+Shift+Enter")
+        self.openBaseDoc = QAction('Open base document', parent)
+        self.openBaseDoc.setShortcut('Ctrl+Shift+Enter')
         #
         # if all non folders (for now)
-        self.export = QAction("Export...", parent)
+        self.export = QAction('Export...', parent)
         self.export.setShortcut(QKeySequence.Save)
-        self.export.setIcon(QIcon(":assets/16/export.svg"))
+        self.export.setIcon(QIcon(':assets/16/export.svg'))
         #
         # anything
-        self.exportHighlights = QAction("Export highlights...", parent)
-        self.exportHighlights.setShortcut("Ctrl+H")
-        self.exportHighlights.setIcon(QIcon(":assets/16/highlight.svg"))
+        self.exportHighlights = QAction('Export highlights...', parent)
+        self.exportHighlights.setShortcut('Ctrl+H')
+        self.exportHighlights.setIcon(QIcon(':assets/16/highlight.svg'))
         #
         # if single folder
-        self.upload = QAction("&Upload Here...", parent)
-        self.upload.setShortcut("Ctrl+U")
-        self.upload.setIcon(QIcon(":assets/16/import.svg"))
+        self.upload = QAction('&Upload Here...', parent)
+        self.upload.setShortcut('Ctrl+U')
+        self.upload.setIcon(QIcon(':assets/16/import.svg'))
         #
         # if single non root entry
-        self.rename = QAction("Rename", parent)
-        self.rename.setIcon(QIcon(":assets/16/rename.svg"))
+        self.rename = QAction('Rename', parent)
+        self.rename.setIcon(QIcon(':assets/16/rename.svg'))
         # if any unpinned
-        self.addToPinned = QAction("Add to Favourites", parent)
-        self.addToPinned.setIcon(QIcon(":assets/16/star-add.svg"))
+        self.addToPinned = QAction('Add to Favourites', parent)
+        self.addToPinned.setIcon(QIcon(':assets/16/star-add.svg'))
         # if any pinned
-        self.remFromPinned = QAction("Remove from Favourites", parent)
-        self.remFromPinned.setIcon(QIcon(":assets/16/star-rem.svg"))
+        self.remFromPinned = QAction('Remove from Favourites', parent)
+        self.remFromPinned.setIcon(QIcon(':assets/16/star-rem.svg'))
         #
         # if single sel
-        self.newFolder = QAction("New Folder", parent)
+        self.newFolder = QAction('New Folder', parent)
         self.newFolder.setShortcut(QKeySequence.New)
-        self.newFolder.setIcon(QIcon(":assets/16/folder-new.svg"))
+        self.newFolder.setIcon(QIcon(':assets/16/folder-new.svg'))
         #
         # non root
-        self.newFolderWith = QAction("New Folder with Selection", parent)
-        self.newFolderWith.setIcon(QIcon(":assets/16/folder-with.svg"))
-        self.moveTo = QAction("Move to…", parent)
-        self.moveTo.setIcon(QIcon(":assets/symbolic/folder.svg"))
+        self.newFolderWith = QAction('New Folder with Selection', parent)
+        self.newFolderWith.setIcon(QIcon(':assets/16/folder-with.svg'))
+        self.moveTo = QAction('Move to…', parent)
+        self.moveTo.setIcon(QIcon(':assets/symbolic/folder.svg'))
         #
         # non root
-        self.delete = QAction("Move to Trash", parent)
+        self.delete = QAction('Move to Trash', parent)
         self.delete.setShortcut(QKeySequence.Delete)
-        self.delete.setIcon(QIcon(":assets/16/trash.svg"))
+        self.delete.setIcon(QIcon(':assets/16/trash.svg'))
         # if pending
-        self.cancelPending = QAction("Cancel all pending", parent)
-        self.cancelPending.setIcon(QIcon(":assets/16/cancel.svg"))
-        self.dismissErrors = QAction("Dismiss all errors", parent)
-        self.dismissErrors.setIcon(QIcon(":assets/16/clear-all.svg"))
+        self.cancelPending = QAction('Cancel all pending', parent)
+        self.cancelPending.setIcon(QIcon(':assets/16/cancel.svg'))
+        self.dismissErrors = QAction('Dismiss all errors', parent)
+        self.dismissErrors.setIcon(QIcon(':assets/16/clear-all.svg'))
         #
-        self.browse = QAction("Browse folders")
-        self.browse.setIcon(QIcon(":assets/16/browser.svg"))
+        self.browse = QAction('Browse folders')
+        self.browse.setIcon(QIcon(':assets/16/browser.svg'))
         self.browse.setCheckable(True)
-        self.listPdfs = QAction("List all PDFs")
-        self.listPdfs.setIcon(QIcon(":assets/16/pdf.svg"))
+        self.listPdfs = QAction('List all PDFs')
+        self.listPdfs.setIcon(QIcon(':assets/16/pdf.svg'))
         self.listPdfs.setCheckable(True)
-        self.listEpubs = QAction("List all EPUBs")
-        self.listEpubs.setIcon(QIcon(":assets/16/epub.svg"))
+        self.listEpubs = QAction('List all EPUBs')
+        self.listEpubs.setIcon(QIcon(':assets/16/epub.svg'))
         self.listEpubs.setCheckable(True)
-        self.listNotebooks = QAction("List all Notebooks")
-        self.listNotebooks.setIcon(QIcon(":assets/16/notebook.svg"))
+        self.listNotebooks = QAction('List all Notebooks')
+        self.listNotebooks.setIcon(QIcon(':assets/16/notebook.svg'))
         self.listNotebooks.setCheckable(True)
-        self.listPinned = QAction("List all Favourites")
-        self.listPinned.setIcon(QIcon(":assets/symbolic/starred.svg"))
+        self.listPinned = QAction('List all Favourites')
+        self.listPinned.setIcon(QIcon(':assets/symbolic/starred.svg'))
         self.listPinned.setCheckable(True)
-        self.listResults = QAction("List search results")
-        self.listResults.setIcon(QIcon(":assets/symbolic/search.svg"))
+        self.listResults = QAction('List search results')
+        self.listResults.setIcon(QIcon(':assets/symbolic/search.svg'))
         self.listResults.setCheckable(True)
         self.listResults.setVisible(False)
         self.listResults.toggled.connect(lambda c: self.listResults.setVisible(c))
@@ -248,7 +245,7 @@ class FileBrowser(QMainWindow):
 
         # tree.doubleClicked.connect(self.openEntry)
 
-        self.setWindowTitle("Remedy")
+        self.setWindowTitle('Remedy')
         self.show()
         dg = QApplication.desktop().availableGeometry(self)
         self.resize(dg.size() * 0.7)
@@ -264,7 +261,7 @@ class FileBrowser(QMainWindow):
         self.actions = Actions(self, isLive=not self.index.isReadOnly())
         self._connectActions()
         tree.itemChanged.connect(self.itemChanged)
-        self.showResAct = act = QAction("Show in enclosing folder")
+        self.showResAct = act = QAction('Show in enclosing folder')
         act.triggered.connect(self.resultActivated)
         # results.addAction(act)
         # results.addAction(self.actions.preview)
@@ -274,7 +271,7 @@ class FileBrowser(QMainWindow):
         results.contextMenu.connect(self.contextMenu)
 
         self.setUnifiedTitleAndToolBarOnMac(True)
-        tb = QToolBar("Documents")
+        tb = QToolBar('Documents')
         sep = True
         for a in self.actions.toolBarActions():
             if a == Actions.SPACER:
@@ -351,18 +348,18 @@ class FileBrowser(QMainWindow):
                 self.results.showPinnedOnly(False)
                 self.results.setQuery(None)
             if which is self.actions.listPdfs:
-                self.results.showOnlyType("pdf")
-                self.info.setDefaultInfo(title="PDFs", icon="pdf")
+                self.results.showOnlyType('pdf')
+                self.info.setDefaultInfo(title='PDFs', icon='pdf')
             elif which is self.actions.listEpubs:
-                self.results.showOnlyType("epub")
-                self.info.setDefaultInfo(title="EPUBs", icon="epub")
+                self.results.showOnlyType('epub')
+                self.info.setDefaultInfo(title='EPUBs', icon='epub')
             elif which is self.actions.listNotebooks:
-                self.results.showOnlyType("notebook")
-                self.info.setDefaultInfo(title="Notebooks", icon="notebook")
+                self.results.showOnlyType('notebook')
+                self.info.setDefaultInfo(title='Notebooks', icon='notebook')
             elif which is self.actions.listPinned:
                 self.results.showAllTypes()
                 self.results.showPinnedOnly(True)
-                self.info.setDefaultInfo(title="Favourites", icon="starred")
+                self.info.setDefaultInfo(title='Favourites', icon='starred')
             self.stack.setCurrentWidget(self.results)
             self.results.clearSelection()
 
@@ -384,7 +381,7 @@ class FileBrowser(QMainWindow):
         entry = item.entry()
         if col == 0 and entry and entry.name() != name:
             if name:
-                log.debug("Rename %s -> %s", entry.name(), name)
+                log.debug('Rename %s -> %s', entry.name(), name)
                 Worker(self.index.rename, entry.uid, name).start()
             else:
                 item.setText(0, entry.name())
@@ -395,7 +392,7 @@ class FileBrowser(QMainWindow):
         for doc in files:
             if not isinstance(doc, Path):
                 doc = Path(doc)
-            log.info("Uploading %s to %s", doc, e.visibleName if e else "root")
+            log.info('Uploading %s to %s', doc, e.visibleName if e else 'root')
             cont = QApplication.instance().config.upload(doc.suffix)
             UploadWorker(self.index, path=doc, parent=p, content=cont).start()
 
@@ -437,8 +434,8 @@ class FileBrowser(QMainWindow):
         # item = self.tree.currentItem()
         for e in self.currentView().selectedEntries():
             filename = e.retrieveBaseDocument()
-            log.info("%s", filename)
-            QDesktopServices.openUrl(QUrl("file://" + filename))
+            log.info('%s', filename)
+            QDesktopServices.openUrl(QUrl('file://' + filename))
 
     def openEntry(self, entry, col=0):
         if isinstance(entry, DocTreeItem):
@@ -478,7 +475,7 @@ class FileBrowser(QMainWindow):
     def uploadIntoCurrentEntry(self):
         entry = self.currentView().currentEntry()
         if entry and not entry.index.isReadOnly():
-            filenames, ok = QFileDialog.getOpenFileNames(self, "Select files to import")
+            filenames, ok = QFileDialog.getOpenFileNames(self, 'Select files to import')
             if ok and filenames:
                 self._requestUpload(entry.uid, filenames)
 
@@ -490,9 +487,9 @@ class FileBrowser(QMainWindow):
                 entry = entry.parentEntry()
             name, ok = QInputDialog.getText(
                 self,
-                "New Folder in %s" % entry.name(),
-                "Name of new folder:",
-                text="New Folder",
+                'New Folder in %s' % entry.name(),
+                'Name of new folder:',
+                text='New Folder',
             )
             if ok and name:
                 NewFolderWorker(self.index, parent=entry.uid, visibleName=name).start()
@@ -535,9 +532,9 @@ class FileBrowser(QMainWindow):
             parent = entries[0].parentEntry()
             name, ok = QInputDialog.getText(
                 self,
-                "New Folder in %s" % parent.name(),
-                "Name of new folder (with %d items):" % len(entries),
-                text="New Folder",
+                'New Folder in %s' % parent.name(),
+                'Name of new folder (with %d items):' % len(entries),
+                text='New Folder',
             )
             if ok and name:
                 Worker(

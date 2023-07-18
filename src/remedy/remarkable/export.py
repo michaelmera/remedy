@@ -1,11 +1,10 @@
-from remedy import *
-
-from PyQt5.QtCore import pyqtSignal, QThread, QSizeF
+from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2.generic import NullObject
+from PyQt5.QtCore import QSizeF, QThread, pyqtSignal
 from PyQt5.QtGui import QPainter
 from PyQt5.QtPrintSupport import QPrinter
 
-from PyPDF2 import PdfFileReader, PdfFileWriter
-from PyPDF2.generic import NullObject
+from remedy import *
 
 try:
     from PyPDF2.pdf import PageObject
@@ -16,7 +15,6 @@ except ImportError:
 
 from remedy.remarkable.metadata import PDFBasedDoc
 from remedy.remarkable.render import BarePageScene, Palette
-
 from remedy.utils import log
 
 
@@ -45,7 +43,7 @@ def scenesPdf(scenes, pages, outputPath, progress=None, tot=0):
     printer.setOutputFileName(outputPath)
     printer.setPaperSize(QSizeF(HEIGHT_MM, WIDTH_MM), QPrinter.Millimeter)
     printer.setPageMargins(0, 0, 0, 0, QPrinter.Millimeter)
-    printer.setCreator("Remedy")
+    printer.setCreator('Remedy')
     p = QPainter()
     p.begin(printer)
     try:
@@ -68,7 +66,7 @@ def pdfrotate(outputPath, rotate=0):
         page = reader.getPage(pageNum)
         page.rotateClockwise(90)
         writer.addPage(page)
-    with open(outputPath, "wb") as out:
+    with open(outputPath, 'wb') as out:
         writer.write(out)
 
 
@@ -119,7 +117,7 @@ def pdfmerge(base, outputPath, pdfRanges=None, rotate=0, progress=None):
         _progress(progress, page, pageNum + 1)
 
     writer.removeLinks()  # until we implement transformations on annotations
-    with open(outputPath, "wb") as out:
+    with open(outputPath, 'wb') as out:
         writer.write(out)
 
     _progress(progress, pageNum + 1, pageNum + 1)
@@ -131,20 +129,20 @@ def _pageint(i):
 
 
 def parsePageRange(s):
-    s = [i.strip() for i in s.split(":")]
+    s = [i.strip() for i in s.split(':')]
     if len(s) > 3:
-        raise Exception("Could not parse page range")
+        raise Exception('Could not parse page range')
     r = []
     if len(s) == 1:
         if len(s[0]) == 0:
             return [None]
-        i = -1 if s[0] == "end" or len(s[0]) == 0 else _pageint(s[0])
+        i = -1 if s[0] == 'end' or len(s[0]) == 0 else _pageint(s[0])
         j = None if i == -1 else i + 1
         return [i, j]
     for i in range(3):
         if i >= len(s):
             r.append(None)
-        elif s[i] == "end" or len(s[i]) == 0:
+        elif s[i] == 'end' or len(s[i]) == 0:
             r.append(-1 if i == 0 else None)
         elif i < 2:
             r.append(_pageint(s[i]))
@@ -155,9 +153,9 @@ def parsePageRange(s):
 
 def validatePageRanges(whichPages):
     try:
-        if whichPages.strip() == "marked":
+        if whichPages.strip() == 'marked':
             return True
-        for s in whichPages.split(","):
+        for s in whichPages.split(','):
             parsePageRange(s)
         return True
     except:
@@ -165,24 +163,24 @@ def validatePageRanges(whichPages):
 
 
 def parsePageRanges(whichPages, document=None):
-    if whichPages.strip() == "marked":
+    if whichPages.strip() == 'marked':
         if isinstance(document, PDFBasedDoc):
             return [slice(i, i + 1) for i in document.markedPages()]
         else:
             return [slice(None)]
-    return [slice(*parsePageRange(s)) for s in whichPages.split(",")]
+    return [slice(*parsePageRange(s)) for s in whichPages.split(',')]
 
 
 import json
 
 
 def parseExcludeLayers(exclude_layers):
-    return set(json.loads("[%s]" % exclude_layers))
+    return set(json.loads('[%s]' % exclude_layers))
 
 
 def validateExcludeLayers(exclude_layers):
     try:
-        json.loads("[%s]" % exclude_layers)
+        json.loads('[%s]' % exclude_layers)
         return True
     except Exception:
         return False
@@ -217,15 +215,15 @@ class Exporter(QThread):
         # we are disabling highlight customisation for the moment
         # and using opacity instead of 'darken' composition mode
         # since the latter is not supported by the PDF export of Qt
-        pal = self.options.get("palette")
-        self.options["palette"] = pal.opacityBased()
+        pal = self.options.get('palette')
+        self.options['palette'] = pal.opacityBased()
 
     def cancel(self):
         self._cancel = True
 
     def _progress(self, i=1, t=1):
         if self._cancel:
-            raise CancelledExporter("Export was cancelled")
+            raise CancelledExporter('Export was cancelled')
         # QCoreApplication.processEvents()
         if i > 0:
             self.onProgress.emit()
@@ -240,22 +238,22 @@ class Exporter(QThread):
             totPages = self.document.pageCount or 0
             pdf = None
             if isinstance(self.document, PDFBasedDoc) and self.options.get(
-                "include_base_layer", True
+                'include_base_layer', True
             ):
                 pdf = self.document.retrieveBaseDocument()
                 # baseReader = PdfFileReader(pdf, strict=False)
                 # totPages = baseReader.getNumPages()
 
-            rot = self.options.get("orientation", "auto")
-            if rot == "auto":
-                rot = self.document.orientation != "portrait"
+            rot = self.options.get('orientation', 'auto')
+            if rot == 'auto':
+                rot = self.document.orientation != 'portrait'
             else:
-                rot = rot == "landscape"
+                rot = rot == 'landscape'
 
             ranges = [range(*s.indices(totPages)) for s in self.whichPages]
             steps = sum(len(r) for r in ranges)
             if steps == 0:
-                raise Exception("No pages to export!")
+                raise Exception('No pages to export!')
             if pdf:
                 self.onStart.emit(steps * 3 + 1)
             else:
@@ -271,12 +269,12 @@ class Exporter(QThread):
             # for i in pages:
             #   scenes.append(BarePageScene(self.document.getPage(i), progress=pr, **self.options))
             #   self._progress()
-            self.onNewPhase.emit("Generating PDF of lines")
+            self.onNewPhase.emit('Generating PDF of lines')
             scenesPdf(
                 self.genScenes, pages, self.filename, progress=self._progress, tot=steps
             )
             if pdf:
-                self.onNewPhase.emit("Merging with original PDF")
+                self.onNewPhase.emit('Merging with original PDF')
                 pdfmerge(
                     self.document.baseDocument(),
                     self.filename,
@@ -289,7 +287,7 @@ class Exporter(QThread):
 
             self.onSuccess.emit()
         except Exception as e:
-            log.warning("Exception on exporting: %s", e)
+            log.warning('Exception on exporting: %s', e)
             self.onError.emit(e)
             import traceback
 
@@ -298,7 +296,7 @@ class Exporter(QThread):
     def genScenes(self, pages):
         def pr(*a):
             if self._cancel:
-                raise CancelledExporter("Export was cancelled")
+                raise CancelledExporter('Export was cancelled')
 
         # ---
         for i in pages:
