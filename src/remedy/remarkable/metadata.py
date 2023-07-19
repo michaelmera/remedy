@@ -333,11 +333,11 @@ class Document(Entry):
 
     def numHighlightedPages(self):
         return sum(
-            1 for _ in self.fsource.listSubItems(self.uid + '.highlights', ext='.json')
+            1 for _ in self.fsource.listSubItems(self.uid + '.highlights', ext='json')
         )
 
     def numMarkedPages(self):
-        return sum(1 for _ in self.fsource.listSubItems(self.uid, ext='.rm'))
+        return sum(1 for _ in self.fsource.listSubItems(self.uid, ext='rm'))
 
     def highlights(self, pageRange=None):
         highlights = []

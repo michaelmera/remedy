@@ -154,7 +154,7 @@ class LocalFileSource(FileSource):
         if not folder.is_dir():
             return
 
-        for file in folder.glob(f'*{ext}'):
+        for file in folder.glob(f'*.{ext}'):
             if not file.is_file():
                 continue
 
