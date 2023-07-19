@@ -3,7 +3,7 @@ import os
 import os.path as path
 import shutil
 import subprocess
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from shutil import which
 from stat import S_ISDIR, S_ISREG
 from threading import RLock
@@ -75,7 +75,7 @@ class FileSource:
     def listItems(self):
         raise NotImplementedError
 
-    def listSubItems(self, uid, ext='rm'):
+    def listSubItems(self, uid, ext):
         raise NotImplementedError
 
     def _selectTemplate(self, name, preferVector=False):
@@ -143,24 +143,22 @@ class LocalFileSource(FileSource):
         pass
 
     def listItems(self):
-        with os.scandir(self.root) as entries:
-            for entry in entries:
-                if entry.is_file():
-                    name = path.splitext(entry.name)
-                    if name[1] == '.metadata':
-                        yield name[0]
+        for file in Path(self.root).glob('*.metadata'):
+            if not file.is_file():
+                continue
 
-    def listSubItems(self, uid, ext='.rm'):
-        folder = path.join(self.root, uid)
-        if not ext.startswith('.'):
-            ext = '.' + ext
-        if path.isdir(folder):
-            with os.scandir(folder) as entries:
-                for entry in entries:
-                    if entry.is_file():
-                        name = path.splitext(entry.name)
-                        if name[1] == ext:
-                            yield name[0]
+            yield file.stem
+
+    def listSubItems(self, uid, ext):
+        folder = Path(self.root) / uid
+        if not folder.is_dir():
+            return
+
+        for file in folder.glob(f'*{ext}'):
+            if not file.is_file():
+                continue
+
+            yield file.stem
 
 
 DOCSDIR = 0
@@ -369,10 +367,9 @@ class LiveFileSourceSSH(FileSource):
                         self._allUids.append(name[0])
         return self._allUids
 
-    def listSubItems(self, uid, ext='.rm'):
+    def listSubItems(self, uid, ext):
         folder = self._remote(uid)
-        if not ext.startswith('.'):
-            ext = '.' + ext
+
         try:
             # I don't want to yield while holding a lock
             items = []

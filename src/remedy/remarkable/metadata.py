@@ -332,16 +332,12 @@ class Document(Entry):
         return self._fallbackPageCount()
 
     def numHighlightedPages(self):
-        i = 0
-        for _ in self.fsource.listSubItems(self.uid + '.highlights', ext='.json'):
-            i += 1
-        return i
+        return sum(
+            1 for _ in self.fsource.listSubItems(self.uid + '.highlights', ext='.json')
+        )
 
     def numMarkedPages(self):
-        i = 0
-        for _ in self.fsource.listSubItems(self.uid, ext='.rm'):
-            i += 1
-        return i
+        return sum(1 for _ in self.fsource.listSubItems(self.uid, ext='.rm'))
 
     def highlights(self, pageRange=None):
         highlights = []
