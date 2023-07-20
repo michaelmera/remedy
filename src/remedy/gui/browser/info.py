@@ -195,18 +195,17 @@ class InfoPanel(QWidget):
             self._addDetailRow('Files', '%d' % len(entry.files))
         elif isinstance(entry, Document):
             self._addDetailRow('Opened', entry.openedFullDate(None))
-            if entry.pageCount:
-                if (
-                    entry.originalPageCount
-                    and entry.originalPageCount > 0
-                    and entry.pageCount - entry.originalPageCount > 0
-                ):
-                    self._addDetailRow(
-                        'Pages',
-                        f'{entry.pageCount} (of which {entry.pageCount - entry.originalPageCount} of notes)',
-                    )
-                else:
-                    self._addDetailRow('Pages', str(entry.pageCount))
+            if (
+                entry.originalPageCount
+                and entry.originalPageCount > 0
+                and entry.num_pages() - entry.originalPageCount > 0
+            ):
+                self._addDetailRow(
+                    'Pages',
+                    f'{entry.num_pages()} (of which {entry.num_pages() - entry.originalPageCount} of notes)',
+                )
+            else:
+                self._addDetailRow('Pages', str(entry.num_pages()))
             self._addDetailRow('Size', entry.size())
             self._addDetailRow('Orientation', entry.orientation)
 

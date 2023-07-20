@@ -321,16 +321,14 @@ class Document(Entry):
 
         return self._makePage(layers, ver, pageNum)
 
-    def _fallbackPageCount(self) -> int:
-        return 0
-
-    def totalPageCount(self) -> int:
-        if self.pageCount:
+    def num_pages(self) -> int:
+        if self.pageCount is not None:
             return self.pageCount
-        if self.pages:
+
+        if self.pages is not None:
             return len(self.pages)
 
-        return self._fallbackPageCount()
+        return 0
 
     def numHighlightedPages(self) -> int:
         return sum(
@@ -342,7 +340,7 @@ class Document(Entry):
 
     def highlights(self):
         highlights = []
-        pageCount = self.pageCount or 0
+        pageCount = self.num_pages()
         pages = self.pages
         if pages is None:
             pages = range(0, pageCount)
@@ -470,8 +468,12 @@ class PDFBasedDoc(Document):
     def baseDocumentName(self):
         return self.uid + '.pdf'
 
-    def _fallbackPageCount(self):
-        return self._pdf.pageCount()
+    def num_pages(self) -> int:
+        result = super().num_pages()
+        if result == 0:
+            return self._pdf.pageCount()
+
+        return result
 
 
 class PDFDoc(PDFBasedDoc):

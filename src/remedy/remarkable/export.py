@@ -235,14 +235,11 @@ class Exporter(QThread):
     def run(self):
         try:
             scenes = []
-            totPages = self.document.pageCount or 0
             pdf = None
             if isinstance(self.document, PDFBasedDoc) and self.options.get(
                 'include_base_layer', True
             ):
                 pdf = self.document.retrieveBaseDocument()
-                # baseReader = PdfFileReader(pdf, strict=False)
-                # totPages = baseReader.getNumPages()
 
             rot = self.options.get('orientation', 'auto')
             if rot == 'auto':
@@ -250,7 +247,9 @@ class Exporter(QThread):
             else:
                 rot = rot == 'landscape'
 
-            ranges = [range(*s.indices(totPages)) for s in self.whichPages]
+            ranges = [
+                range(*s.indices(self.document.num_pages())) for s in self.whichPages
+            ]
             steps = sum(len(r) for r in ranges)
             if steps == 0:
                 raise Exception('No pages to export!')
