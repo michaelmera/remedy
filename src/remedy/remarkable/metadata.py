@@ -340,7 +340,7 @@ class Document(Entry):
     def numMarkedPages(self) -> int:
         return sum(1 for _ in self.fsource.listSubItems(self.uid, ext='rm'))
 
-    def highlights(self, pageRange=None):
+    def highlights(self):
         highlights = []
         pageCount = self.pageCount or 0
         pages = self.pages
@@ -348,10 +348,8 @@ class Document(Entry):
             pages = range(0, pageCount)
         else:
             pageCount = max(pageCount, len(pages))
-        if pageRange is None:
-            pageRange = range(0, pageCount)
-        elif isinstance(pageRange, int):
-            pageRange = range(pageRange, pageRange + 1)
+
+        pageRange = range(0, pageCount)
         for i in pageRange:
             pid = pages[i]
             if self.fsource.exists(self.uid + '.highlights', pid, ext='json'):
@@ -365,6 +363,7 @@ class Document(Entry):
                     h['pageNum'] = i + 1
                     h['pageId'] = pid
                     highlights.append(h)
+
         return highlights
 
     def marked(self, pageNum) -> bool:
