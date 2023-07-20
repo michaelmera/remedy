@@ -319,9 +319,6 @@ class Document(Entry):
     def _makePage(self, layers, version, pageNum) -> Page:
         return Page(layers, version, pageNum, document=self)
 
-    def prefetch(self, progress=None):
-        self.fsource.prefetchDocument(self.uid, progress=progress)
-
     def retrieveBaseDocument(self):
         return None
 

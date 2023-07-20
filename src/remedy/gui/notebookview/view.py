@@ -87,21 +87,13 @@ class NotebookView(QGraphicsView):
         QGraphicsView.__init__(self, parent=parent)
         self.actions = Actions(self)
         self._connectActions()
-        # self.setAttribute(Qt.WA_OpaquePaintEvent, True)
 
         self.setRenderHint(QPainter.Antialiasing)
-        # self.setRenderHint(QPainter.SmoothPixmapTransform)
-        # setting this^ per-pixmap now, so pencil textures are not smoothened
 
         self.viewport().grabGesture(Qt.GestureType.PinchGesture)
 
         self._document = document
         self.options = QApplication.instance().config.preview
-        # document.prefetch()
-        # self.uid = uid
-
-        # self.scene = QGraphicsScene()
-        # self.setScene(self.scene)
 
         self.setBackgroundBrush(QColor(230, 230, 230))
         self.aspectRatioMode = Qt.AspectRatioMode.KeepAspectRatio

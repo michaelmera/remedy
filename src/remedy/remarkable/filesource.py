@@ -60,9 +60,6 @@ class FileSource:
     def prefetchMetadata(self, progress=None) -> None:
         raise NotImplementedError
 
-    def prefetchDocument(self, uid, progress=None) -> None:
-        raise NotImplementedError
-
     def exists(self, *filename, ext=None):
         raise NotImplementedError
 
@@ -126,9 +123,6 @@ class LocalFileSource(FileSource):
             return None
 
     def prefetchMetadata(self, progress=None) -> None:
-        pass
-
-    def prefetchDocument(self, uid, progress=None) -> None:
         pass
 
     def exists(self, *filename, ext=None):
@@ -312,13 +306,6 @@ class LiveFileSourceSSH(FileSource):
 
     def prefetchMetadata(self, progress=None) -> None:
         pass
-
-    def prefetchDocument(self, uid, progress=None) -> None:
-        with self._lock:
-            if self._isfile(self._remote(uid + '.pdf')):
-                self.scp.get(self._remote(uid + '.pdf'), self._local(uid))
-            if self._isfile(self._remote(uid + '.epub')):
-                self.scp.get(self._remote(uid + '.epub'), self._local(uid))
 
     def exists(self, *filename, ext=None):
         if ext:
@@ -580,22 +567,6 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
             for entry in entries:
                 if entry.is_file():
                     self._updated[entry.path] = True
-
-    def prefetchDocument(self, uid, progress=None) -> None:
-        with self._lock:
-            self._bulk_download(
-                self._remote(uid), self._local(uid), excludes=[], progress=progress
-            )
-            self._bulk_download(
-                self._remote(uid + '.highlights'),
-                self._local(uid),
-                excludes=[],
-                progress=progress,
-            )
-            with os.scandir(self._local(uid)) as entries:
-                for entry in entries:
-                    if entry.is_file():
-                        self._updated[entry.path] = True
 
     def cleanup(self) -> None:
         log.debug('CLEANUP: %s', self._dirty)
