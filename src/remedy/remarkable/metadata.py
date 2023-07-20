@@ -366,14 +366,11 @@ class Document(Entry):
                     highlights.append(h)
         return highlights
 
-    def marked(self, pageNum, highlights=True):
+    def marked(self, pageNum) -> bool:
         pid = self.getPageId(pageNum)
-        if self.fsource.exists(self.uid, pid, ext='rm'):
-            return True
-        if highlights:
-            if self.fsource.exists(self.uid + '.highlights', pid, ext='json'):
-                return True
-        return False
+        return self.fsource.exists(self.uid, pid, ext='rm') or self.fsource.exists(
+            self.uid + '.highlights', pid, ext='json'
+        )
 
     def _makePage(self, layers, version, pageNum):
         return Page(layers, version, pageNum, document=self)
