@@ -32,7 +32,9 @@ class ThumbnailWorker(QRunnable):
                 eraser_mode=IGNORE_ERASER,
             )
             img = QImage(
-                self.height * s.width() / s.height(), self.height, QImage.Format_ARGB32
+                int(self.height * s.width() / s.height()),
+                int(self.height),
+                QImage.Format_ARGB32,
             )
             img.fill(Qt.GlobalColor.white)
             painter = QPainter(img)
@@ -41,7 +43,7 @@ class ThumbnailWorker(QRunnable):
             if page.background and page.background.name != 'Blank':
                 bgf = page.background.path()
                 if bgf:
-                    bg = QImage(bgf)
+                    bg = QImage(str(bgf))
                     painter.drawImage(img.rect(), bg)
             else:
                 pdf = d.baseDocument()
