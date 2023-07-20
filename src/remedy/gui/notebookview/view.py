@@ -158,7 +158,7 @@ class NotebookView(QGraphicsView):
         if bg and bg.name not in self._templates:
             bgf = bg.path()
             if bgf:
-                self._templates[bg.name] = QImage(bgf)
+                self._templates[bg.name] = QImage(str(bgf))
             else:
                 return None
         return self._templates[bg.name]
@@ -453,6 +453,8 @@ class AsyncPageLoad(QRunnable):
         img = None
         if not page.background or page.background.name == 'Blank':
             img = self.imageOfBasePdf(2)
+        else:
+            img = QImage()
 
         p = PageGraphicsItem(page, **self.options)
         self.signals.pageReady.emit(page, p, img)
