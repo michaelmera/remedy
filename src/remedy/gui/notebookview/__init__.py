@@ -1,27 +1,12 @@
-# from remedy import *
-
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction, QApplication, QLineEdit, QMainWindow, QToolBar
 
 from remedy.gui.export import exportDocument, webUIExport
 from remedy.gui.hwr import HWRResults
-from remedy.gui.notebookview.view import *
-from remedy.remarkable.constants import *
-
-# import time
+from remedy.gui.notebookview.view import NotebookView
+from remedy.remarkable.metadata import PDFBasedDoc
 from remedy.utils import log
-
-# from os import path
-
-
-# class PageThumbItem(QListWidgetItem):
-
-#   def __init__(self, document, i, parent=None):
-#     QListWidgetItem.__init__(self, parent=parent)
-#     self.setText("Page %s" % (i+1))
-#     self.document = document
-#     self.pageNum = i
 
 
 class NotebookViewer(QMainWindow):

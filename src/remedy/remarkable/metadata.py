@@ -413,13 +413,13 @@ class Notebook(Document):
     def _postInit(self):
         try:
             pfile = self.fsource.retrieve(self.uid, ext='pagedata')
-            with open(pfile) as f:
+            with open(pfile, encoding='utf-8') as f:
                 self._bg = [t.rstrip('\n') for t in f.readlines()]
         except OSError:
             pass
 
     def _makePage(self, layers, version, pageNum) -> Page:
-        t = self._bg.get(pageNum, None)
+        t = self._bg[pageNum] if pageNum < len(self._bg) else None
         if t:
             template = Template(t, path=(lambda: self.fsource.retrieveTemplate(t)))
         else:
