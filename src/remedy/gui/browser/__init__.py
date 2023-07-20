@@ -399,7 +399,7 @@ class FileBrowser(QMainWindow):
     # @pyqtSlot()
     # def selClear(self):
     #   print(self.tree.currentItem())
-    #   self.info.setEntry(self.index.root())
+    #   self.info.setEntry(self.index.root)
 
     # @pyqtSlot(QTreeWidgetItem,QTreeWidgetItem)
     def treeCurrentChanged(self, cur=None, prev=None):

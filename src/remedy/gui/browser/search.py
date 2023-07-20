@@ -122,7 +122,7 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
         elif role == Qt.ItemDataRole.UserRole:
             return uid
         elif role == Qt.ItemDataRole.UserRole + 1:
-            return entry.typeName()
+            return entry.type_name
         elif role == Qt.ItemDataRole.UserRole + 2:
             return '1' if entry.isIndirectlyDeleted() else '0'
         elif role == Qt.ItemDataRole.UserRole + 3:
@@ -132,7 +132,7 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
             if role == Qt.ItemDataRole.DisplayRole:
                 return entry.name()
             elif role == Qt.ItemDataRole.DecorationRole:
-                return self._icon.get(entry.typeName())
+                return self._icon.get(entry.type_name)
         elif index.column() == 1:  # pinned
             if role == Qt.ItemDataRole.DisplayRole:
                 return '1' if entry.pinned else '0'
@@ -141,7 +141,7 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
                 return entry.updatedOn()
         elif index.column() == 3:  # type
             if role == Qt.ItemDataRole.DisplayRole:
-                return entry.typeName().title()
+                return entry.type_name.title()
 
         if index.column() > 0 and role == Qt.ItemDataRole.ForegroundRole:
             return self._fadedColor

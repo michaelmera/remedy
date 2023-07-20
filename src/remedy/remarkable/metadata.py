@@ -61,34 +61,38 @@ class Entry:
             return Unknown(index, uid, metadata, content)
 
         if metadata['type'] == FOLDER_TYPE:
-            return Folder(index, uid, metadata, content)
+            return Folder(index, uid, metadata, content, type_name='folder')
 
-        elif metadata['type'] == DOCUMENT_TYPE:
+        if metadata['type'] == DOCUMENT_TYPE:
             if content['fileType'] in ['', 'notebook']:
-                return Notebook(index, uid, metadata, content)
-            elif content['fileType'] == 'pdf':
-                return PDFDoc(index, uid, metadata, content)
-            elif content['fileType'] == 'epub':
-                return EBook(index, uid, metadata, content)
+                return Notebook(index, uid, metadata, content, type_name='notebook')
+            if content['fileType'] == 'pdf':
+                return PDFBasedDoc(index, uid, metadata, content, type_name='pdf')
+            if content['fileType'] == 'epub':
+                return PDFBasedDoc(index, uid, metadata, content, type_name='epub')
 
         return Unknown(index, uid, metadata, content)
 
-    def __init__(self, index, uid, metadata={}, content={}):
+    def __init__(
+        self, index, uid, metadata=None, content=None, type_name='unknown'
+    ) -> None:
+        self.type_name = type_name
         self.index = index
         self.uid = uid
-        self._metadata = metadata
-        self._content = content
-        self._postInit()
+        self._metadata = metadata if metadata is not None else {}
+        self._content = content if content is not None else {}
 
         self._metadata.setdefault('parent', ROOT_ID)
         self._metadata.setdefault('deleted', False)
         self._metadata.setdefault('visibleName', uid)
 
+        self._postInit()
+
     def _postInit(self):
         pass
 
     def isRoot(self):
-        return False
+        return self.uid == ROOT_ID and self.parent is None
 
     def name(self):
         return self._metadata.get('visibleName')
@@ -177,8 +181,10 @@ class Entry:
     def get(self, field, default=None, where=BOTH):
         if field in self._metadata and where & METADATA:
             return self._metadata[field]
+
         if field in self._content and where & CONTENT:
             return self._content[field]
+
         return default
 
     def __getattr__(self, field):
@@ -203,70 +209,17 @@ class Folder(Entry):
         self.files = []
         self.folders = []
 
-    def get(self, field, default=None):
-        if field == 'files':
-            yield from self.files
-        elif field == 'folders':
-            yield from self.files
-        elif field in self._metadata:
-            return self._metadata[field]
-        elif field in self._content:
-            return self._content[field]
-        else:
-            return default
-
-    def typeName(self):
-        return 'folder'
-
-
-class Unknown(Entry):
-    def get(self, field, default=None, where=BOTH):
-        return default
-
-    def typeName(self):
-        return 'unknown'
-
-
-ROOT_ID = ''
-TRASH_ID = 'trash'
-
-
-class RootFolder(Folder):
-    def __init__(self, index, **kw):
-        self.index = index
-        self.uid = ROOT_ID
-        self._metadata = {
-            'visibleName': 'reMarkable',
-            'parent': None,
-            'deleted': False,
-            'type': FOLDER_TYPE,
-        }
-        self._content = {}
-        self._postInit()
-
-    def isRoot(self):
-        return True
-
-
-class TrashBin(Folder):
-    def __init__(self, index, **kw):
-        self.index = index
-        self.uid = TRASH_ID
-        self._metadata = {
-            'visibleName': 'Trash',
-            'parent': None,
-            'deleted': False,
-            'type': FOLDER_TYPE,
-        }
-        self._content = {}
-        self._postInit()
-
     def items(self):
         yield from self.folders
         yield from self.files
 
-    def typeName(self):
-        return 'trash'
+
+class Unknown(Entry):
+    ...
+
+
+ROOT_ID = ''
+TRASH_ID = 'trash'
 
 
 class Document(Entry):
@@ -427,9 +380,6 @@ class Notebook(Document):
 
         return Page(layers, version, pageNum, document=self, background=template)
 
-    def typeName(self):
-        return 'notebook'
-
 
 class PDFBasedDoc(Document):
     def _postInit(self):
@@ -468,16 +418,6 @@ class PDFBasedDoc(Document):
             return self._pdf.pageCount()
 
         return result
-
-
-class PDFDoc(PDFBasedDoc):
-    def typeName(self):
-        return 'pdf'
-
-
-class EBook(PDFBasedDoc):
-    def typeName(self):
-        return 'epub'
 
 
 DOC_BASE_METADATA = {
@@ -572,8 +512,31 @@ class RemarkableIndex:
     def __init__(self, fsource, progress=(lambda x, tot: None)):
         self.fsource = fsource
         uids = list(fsource.listItems())
-        self.trash = TrashBin(self)
-        self.index = {ROOT_ID: RootFolder(self), TRASH_ID: self.trash}
+        self.root = Folder(
+            self,
+            ROOT_ID,
+            metadata={
+                'visibleName': 'reMarkable',
+                'parent': None,
+                'deleted': False,
+                'type': FOLDER_TYPE,
+            },
+            content={},
+            type_name='folder',
+        )
+        self.trash = Folder(
+            self,
+            TRASH_ID,
+            metadata={
+                'visibleName': 'Trash',
+                'parent': ROOT_ID,
+                'deleted': False,
+                'type': FOLDER_TYPE,
+            },
+            content={},
+            type_name='trash',
+        )
+        self.index = {ROOT_ID: self.root, TRASH_ID: self.trash}
         self.tags = {}
 
         j = 0
@@ -636,9 +599,6 @@ class RemarkableIndex:
     def isReadOnly(self):
         return self.fsource.isReadOnly()
 
-    def root(self):
-        return self.index[ROOT_ID]
-
     def get(self, uid):
         if uid in self.index:
             return self.index[uid]
@@ -693,7 +653,7 @@ class RemarkableIndex:
         return None
 
     def isFolder(self, uid):
-        return uid in self.index and self.index[uid].type in (FOLDER_TYPE, TRASH_ID)
+        return uid in self.index and self.index[uid].type_name in ('folder', 'trash')
 
     def updatedOn(self, uid):
         try:
@@ -787,7 +747,7 @@ class RemarkableIndex:
             self.fsource.store({}, uid + '.content')
             p(2)
 
-            self.index[uid] = d = Folder(self, uid, meta, {})
+            self.index[uid] = d = Folder(self, uid, meta, {}, type_name='folder')
             self.index[d.parent].folders.append(uid)
             self._reservedUids.discard(uid)
 
@@ -869,9 +829,9 @@ class RemarkableIndex:
             self.fsource.makeDir(uid)
 
             if etype == PDF:
-                d = PDFDoc(self, uid, meta, cont)
+                d = PDFBasedDoc(self, uid, meta, cont, type_name='pdf')
             else:
-                d = EBook(self, uid, meta, cont)
+                d = PDFBasedDoc(self, uid, meta, cont, type_name='epub')
             self.index[uid] = d
             self.index[d.parent].files.append(uid)
             self._reservedUids.discard(uid)

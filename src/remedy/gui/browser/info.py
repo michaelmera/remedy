@@ -15,26 +15,13 @@ from PyQt5.QtWidgets import (
 )
 
 from remedy.gui.thumbnail import ThumbnailWorker
-from remedy.remarkable.metadata import (
-    Document,
-    EBook,
-    Entry,
-    Folder,
-    Notebook,
-    PDFBasedDoc,
-    PDFDoc,
-    RootFolder,
-    TrashBin,
-    Unknown,
-)
+from remedy.remarkable.metadata import Document, Entry, Folder, PDFBasedDoc
 from remedy.utils import log
 
 THUMB_HEIGHT = 150
 
 
 class InfoPanel(QWidget):
-    # uploadRequest = pyqtSignal(str, list, list)
-
     def __init__(self, index, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entry = None
@@ -159,14 +146,15 @@ class InfoPanel(QWidget):
             ebooks = 0
             notebs = 0
             for entry in entries:
-                if isinstance(entry, Folder):
+                if entry.type_name == 'folder':
                     folders += 1
-                elif isinstance(entry, PDFDoc):
+                elif entry.type_name == 'pdf':
                     pdfs += 1
-                elif isinstance(entry, EBook):
+                elif entry.type_name == 'epub':
                     ebooks += 1
-                elif isinstance(entry, Notebook):
+                elif entry.type_name == 'notebook':
                     notebs += 1
+
             self.title.setText('%d selected items' % len(entries))
             if folders:
                 self._addDetailRow('Folders', str(folders))
@@ -225,32 +213,39 @@ class InfoPanel(QWidget):
 
         self._addDetailRow('Path', entry.fullPath(), kerning=False)
 
+        icon = {
+            'trash': QPixmap(':assets/128/trash.svg'),
+            'unknown': QPixmap(':assets/128/unknown.svg'),
+            'folder': QPixmap(':assets/128/folder-open.svg'),
+            'pdf': QPixmap(':assets/128/pdf.svg'),
+            'epub': QPixmap(':assets/128/epub.svg'),
+            'notebook': QPixmap(':assets/128/notebook.svg'),
+        }
+
+        title = {
+            'trash': 'Trash',
+            'unknown': 'Unknown',
+        }
+
         # ICONS & TITLE
-        if isinstance(entry, RootFolder):
+        if entry.isRoot():
             self.title.setText(self.rootName or 'Home')
             if entry.fsource.isReadOnly():
                 self.setIcon(QPixmap(':assets/128/backup.svg'))
             else:
                 self.setIcon(QPixmap(':assets/128/tablet.svg'))
-        elif isinstance(entry, TrashBin):
-            self.title.setText('Trash')
-            self.setIcon(QPixmap(':assets/128/trash.svg'))
-        elif isinstance(entry, Unknown):
-            self.title.setText('Unknown')
-            self.setIcon(QPixmap(':assets/128/unknown.svg'))
+        elif entry.type_name in 'trash':
+            self.title.setText(title[entry.type_name])
+            self.setIcon(icon[entry.type_name])
+        elif entry.type_name == 'unknown':
+            self.title.setText(title[entry.type_name])
+            self.setIcon(icon[entry.type_name])
         elif isinstance(entry, Folder):
             self.title.setText(entry.visibleName)
-            self.setIcon(QPixmap(':assets/128/folder-open.svg'))
+            self.setIcon(icon[entry.type_name])
         else:
             self.title.setText(entry.visibleName)
-            if isinstance(entry, PDFDoc):
-                self.setIcon(QPixmap(':assets/128/pdf.svg'))
-            elif isinstance(entry, Notebook):
-                self.setIcon(QPixmap(':assets/128/notebook.svg'))
-            elif isinstance(entry, EBook):
-                self.setIcon(QPixmap(':assets/128/epub.svg'))
-            else:
-                self.title.setText('Unknown item')
+            self.setIcon(icon[entry.type_name])
 
             if entry.uid in self.thumbs:
                 self.setIcon(QPixmap.fromImage(self.thumbs[entry.uid]))

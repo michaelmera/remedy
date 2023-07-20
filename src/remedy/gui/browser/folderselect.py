@@ -35,7 +35,7 @@ class FolderSelectDialog(QDialog):
 
         nodes = self._nodes = {}
         if uid is None:
-            uid = index.root().uid
+            uid = index.root.uid
         self._rootEntry = index.get(uid)
         p = nodes[uid] = QTreeWidgetItem(tree)  # tree.invisibleRootItem()
         p.setText(0, self._rootEntry.visibleName)

@@ -20,17 +20,17 @@ def test_index_has_root_folder() -> None:
     source = MemorySource()
     index = RemarkableIndex(source)
 
-    assert_that(index.root()).is_not_none()
-    assert_that(index.root().uid).is_equal_to(ROOT_ID)
-    assert_that(index.root().typeName()).is_equal_to('folder')
+    assert_that(index.root).is_not_none()
+    assert_that(index.root.uid).is_equal_to(ROOT_ID)
+    assert_that(index.root.type_name).is_equal_to('folder')
 
 
 def test_root_folder_has_no_parent() -> None:
     source = MemorySource()
     index = RemarkableIndex(source)
 
-    assert_that(index.root()).is_not_none()
-    assert_that(index.root().parentEntry()).is_none()
+    assert_that(index.root).is_not_none()
+    assert_that(index.root.parentEntry()).is_none()
 
 
 def test_index_has_trash_folder() -> None:
@@ -39,15 +39,15 @@ def test_index_has_trash_folder() -> None:
 
     assert_that(index.trash).is_not_none()
     assert_that(index.trash.uid).is_equal_to(TRASH_ID)
-    assert_that(index.trash.typeName()).is_equal_to('trash')
+    assert_that(index.trash.type_name).is_equal_to('trash')
 
 
-def test_trash_folder_has_no_parent() -> None:
+def test_trash_folder_is_in_root_folder() -> None:
     source = MemorySource()
     index = RemarkableIndex(source)
 
     assert_that(index.trash).is_not_none()
-    assert_that(index.trash.parentEntry()).is_none()
+    assert_that(index.trash.parentEntry()).is_equal_to(index.root)
 
 
 def test_deleted_files_are_in_trash() -> None:

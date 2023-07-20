@@ -24,12 +24,7 @@ from remedy.remarkable.metadata import (
     ROOT_ID,
     UNKNOWN,
     Document,
-    EBook,
     Entry,
-    Notebook,
-    PDFDoc,
-    TrashBin,
-    Unknown,
 )
 from remedy.utils import log
 
@@ -202,7 +197,10 @@ class DocTreeItem(QTreeWidgetItem):
         self.uploadingWidget = None
         self.setFirstColumnSpanned(False)
         self._entry = entry
+
         icon = self.treeWidget()._icon
+        type_name = self.treeWidget()._type_name
+
         self.setData(0, Qt.ItemDataRole.UserRole, entry.uid)
         flags = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
         self.setText(5, ','.join(entry.allTags()))
@@ -212,15 +210,9 @@ class DocTreeItem(QTreeWidgetItem):
             if not entry.index.isReadOnly() and not entry.isDeleted():
                 flags |= Qt.ItemFlag.ItemIsEditable
             self.setText(0, entry.visibleName)
-            if isinstance(entry, Notebook):
-                self.setIcon(0, icon['notebook'])
-                self.setText(3, 'Notebook')
-            elif isinstance(entry, PDFDoc):
-                self.setIcon(0, icon['pdf'])
-                self.setText(3, 'PDF')
-            elif isinstance(entry, EBook):
-                self.setIcon(0, icon['epub'])
-                self.setText(3, 'EBook')
+
+            self.setIcon(0, icon[entry.type_name])
+            self.setText(3, type_name[entry.type_name])
 
             self.setText(1, entry.updatedOn())
             self.setText(2, '1' if entry.pinned else '')
@@ -229,26 +221,23 @@ class DocTreeItem(QTreeWidgetItem):
                     'You will need to open this document on the tablet '
                     'before being able to properly preview its contents in Remedy.'
                 )
-        elif isinstance(entry, TrashBin):
+        elif entry.type_name == 'trash':
             flags = Qt.ItemFlag.ItemIsEnabled
-            # flags |= Qt.ItemFlag.ItemIsDropEnabled
             self.setText(0, entry.visibleName)
-            self.setIcon(0, icon['trash'])
-            self.setText(3, 'Trash Bin')
+            self.setIcon(0, icon[entry.type_name])
+            self.setText(3, type_name[entry.type_name])
             self.setText(2, '')
-        elif isinstance(entry, Unknown):
-            self.setIcon(0, icon['unknown'])
+        elif entry.type_name == 'unknown':
             self.setText(0, entry.visibleName)
-            self.setText(3, 'Unknown')
+            self.setIcon(0, icon[entry.type_name])
+            self.setText(3, type_name[entry.type_name])
         else:
-            # flags |= Qt.ItemFlag.ItemIsDropEnabled | Qt.ItemFlag.ItemIsDragEnabled
             flags |= Qt.ItemFlag.ItemIsDropEnabled
             if not entry.index.isReadOnly() and not entry.isDeleted():
                 flags |= Qt.ItemFlag.ItemIsEditable
             self.setText(0, entry.visibleName)
-            self.setIcon(0, icon['folder'])
-            # self.setText(1, entry.updatedOn()) # not very useful (unrelated to contents)
-            self.setText(3, 'Folder')
+            self.setIcon(0, icon[entry.type_name])
+            self.setText(3, type_name[entry.type_name])
             self.setText(2, '1' if entry.pinned else '')
         self.setFlags(flags)
         self._sortdata = doctype_sortcode(self.text(3)) + self.text(0)
@@ -289,7 +278,6 @@ class DocTree(QTreeWidget):
         super().__init__(*a, **kw)
         self.setMinimumWidth(400)
         self.setIconSize(QSize(24, 24))
-        # self.setColumnCount(4)
         self.setHeaderLabels(['Name', 'Updated', '', 'Type', '', 'Tags'])
         self.setUniformRowHeights(False)
         self.header().setStretchLastSection(False)
@@ -331,9 +319,18 @@ class DocTree(QTreeWidget):
             'unknown': QIcon(QPixmap(':assets/24/unknown.svg')),
         }
 
+        self._type_name = {
+            'trash': 'Trash Bin',
+            'folder': 'Folder',
+            'pdf': 'PDF',
+            'epub': 'EBook',
+            'notebook': 'Notebook',
+            'unknown': 'Unknown',
+        }
+
         nodes = self._nodes = {}
         if uid is None:
-            uid = index.root().uid
+            uid = index.root.uid
         self._rootEntry = index.get(uid)
         p = nodes[uid] = self.invisibleRootItem()
         for f in index.scanFolders(uid):
@@ -344,28 +341,12 @@ class DocTree(QTreeWidget):
             for d in f.folders:
                 d = index.get(d)
                 c = nodes[d.uid] = DocTreeItem(d, p)
-        if show_trash:
-            t = index.trash
-            nodes[t.uid] = DocTreeItem(t, self)
-            for f in index.scanFolders(t):
-                p = nodes[f.uid]
-                for d in f.files:
-                    d = index.get(d)
-                    c = nodes[d.uid] = DocTreeItem(d, p)
-                    if d.deleted:
-                        c.warning('Item deleted from trash but still on disk')
-                for d in f.folders:
-                    d = index.get(d)
-                    c = nodes[d.uid] = DocTreeItem(d, p)
-                    if d.deleted:
-                        c.warning('Item deleted from trash but still on disk')
 
         self.sortItems(0, Qt.SortOrder.AscendingOrder)
         self.resizeColumnToContents(2)
         self.resizeColumnToContents(4)
         if index.isReadOnly():
             self.setColumnHidden(4, True)
-        # self.header().moveSection(2,1)
         self.itemClicked.connect(self.showMessages)
 
     def itemOf(self, uid):
