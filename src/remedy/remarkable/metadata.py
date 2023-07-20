@@ -160,10 +160,7 @@ class Entry:
         return f'{num:.1f} Y{suffix}'
 
     def cover(self):
-        c = self.get('coverPageNumber', -1, CONTENT)
-        if c < 0:
-            return self.get('lastOpenedPage', 0)
-        return c
+        return self.get('coverPageNumber', self.get('lastOpenedPage', 0))
 
     def allDocTags(self):
         return {t['name'] for t in self.tags or []}
