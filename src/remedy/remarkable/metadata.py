@@ -711,10 +711,10 @@ class RemarkableIndex:
         )
 
     def isIndirectlyDeleted(self, uid):
-        for f in self.ancestryOf(uid, includeSelf=True, reverse=False):
-            if self.isDeleted(f):
-                return True
-        return False
+        return any(
+            self.isDeleted(a)
+            for a in self.ancestryOf(uid, includeSelf=True, reverse=False)
+        )
 
     def __getattr__(self, field):
         if field.endswith('Of'):
