@@ -448,7 +448,7 @@ _TEMPLATE_CACHE = {}
 #   and use i=QGraphicsSvgItem(); i.setSharedRenderer(r)
 def pixmapOfBackground(bg):
     if bg and bg.name not in _TEMPLATE_CACHE:
-        bgf = bg.retrieve()
+        bgf = bg.path()
         if bgf:
             _TEMPLATE_CACHE[bg.name] = QPixmap.fromImage(QImage(bgf))
         else:

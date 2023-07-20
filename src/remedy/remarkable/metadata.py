@@ -407,7 +407,7 @@ Page = namedtuple(
     defaults=[None, None, None],
 )
 
-Template = namedtuple('Template', ['name', 'retrieve'])
+Template = namedtuple('Template', ['name', 'path'])
 
 # Here 'background' is either None or a Template object.
 # Subclasses of Page may use additional types.
@@ -425,18 +425,12 @@ class Notebook(Document):
             pass
 
     def _makePage(self, layers, version, pageNum):
-        try:
-            t = self._bg[pageNum]
-            if t:
-
-                def retrieve():
-                    return self.fsource.retrieveTemplate(t)
-
-                template = Template(t, retrieve)
-            else:
-                template = None
-        except:
+        t = self._bg.get(pageNum, None)
+        if t:
+            template = Template(t, path=(lambda: self.fsource.retrieveTemplate(t)))
+        else:
             template = None
+
         return Page(layers, version, pageNum, document=self, background=template)
 
     def typeName(self):

@@ -39,7 +39,7 @@ class ThumbnailWorker(QRunnable):
             painter.setRenderHint(QPainter.Antialiasing)
             painter.setRenderHint(QPainter.SmoothPixmapTransform)
             if page.background and page.background.name != 'Blank':
-                bgf = page.background.retrieve()
+                bgf = page.background.path()
                 if bgf:
                     bg = QImage(bgf)
                     painter.drawImage(img.rect(), bg)

@@ -159,7 +159,7 @@ class NotebookView(QGraphicsView):
 
     def imageOfBackground(self, bg):
         if bg and bg.name not in self._templates:
-            bgf = bg.retrieve()
+            bgf = bg.path()
             if bgf:
                 self._templates[bg.name] = QImage(bgf)
             else:
@@ -453,14 +453,10 @@ class AsyncPageLoad(QRunnable):
 
     def run(self):
         page = self.document.getPage(self.pageNum)
-        # try:
-        if page.background and page.background.name != 'Blank':
-            page.background.retrieve()
-            img = QImage()
-            # images are cached
-        else:
-            # todo: adapt the oversampling based on QGraphicsView scale
+        img = None
+        if not page.background or page.background.name == 'Blank':
             img = self.imageOfBasePdf(2)
+
         p = PageGraphicsItem(page, **self.options)
         self.signals.pageReady.emit(page, p, img)
 
