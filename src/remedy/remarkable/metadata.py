@@ -282,11 +282,11 @@ class Document(Entry):
         else:
             return self.pages[pageNum]
 
-    def getPage(self, pageNum, force=False) -> Page:
+    def getPage(self, pageNum) -> Page:
         pages = self.pages
         try:
             pid = self.getPageId(pageNum)
-            rmfile = self.fsource.retrieve(self.uid, pid, ext='rm', force=force)
+            rmfile = self.fsource.retrieve(self.uid, pid, ext='rm', force=False)
             with open(rmfile, 'rb') as f:
                 (ver, layers) = readLines(f)
         except:
