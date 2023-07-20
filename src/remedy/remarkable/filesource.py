@@ -38,7 +38,7 @@ class FileSource:
         """
         raise NotImplementedError
 
-    def retrieveTemplate(self, name, progress=None, force=False, preferVector=False):
+    def retrieveTemplate(self, name, progress=None, force=False):
         """
         Given a path `filename` relative to the documents root
         return a local path with the data in it.
@@ -78,11 +78,8 @@ class FileSource:
     def listSubItems(self, uid, ext):
         raise NotImplementedError
 
-    def _selectTemplate(self, name, preferVector=False):
+    def _selectTemplate(self, name):
         if 'png' in self.templates[name]:
-            if 'svg' in self.templates[name]:
-                if preferVector:
-                    return self.templates[name]['svg']
             return self.templates[name]['png']
         else:
             return self.templates[name]['svg']
@@ -93,23 +90,25 @@ class LocalFileSource(FileSource):
 
     def __init__(self, name, root, templatesRoot=None):
         self.name = name
-        self.root = root = path.expanduser(root)
+        self.root = Path(root).expanduser()
         self.templatesRoot = None
-        if templatesRoot:
-            self.templatesRoot = templatesRoot = path.expanduser(templatesRoot)
-            self.templates = {}
-            with open(
-                path.join(templatesRoot, 'templates.json'), encoding='utf-8'
-            ) as f:
-                idx = json.load(f)
-            for t in idx['templates']:
-                name = t['filename']  # "name" is just for display, not for lookup!!!
-                fname = path.join(templatesRoot, t['filename'])
-                self.templates[name] = {}
-                if path.isfile(fname + '.svg'):
-                    self.templates[name]['svg'] = t['filename'] + '.svg'
-                if path.isfile(fname + '.png'):
-                    self.templates[name]['png'] = t['filename'] + '.png'
+
+        if not templatesRoot:
+            return
+
+        self.templatesRoot = Path(templatesRoot).expanduser()
+        self.templates = {}
+        with open(templatesRoot / 'templates.json', encoding='utf-8') as f:
+            idx = json.load(f)
+
+        for t in idx['templates']:
+            name = t['filename']  # "name" is just for display, not for lookup!!!
+            fname = self.templatesRoot / t['filename']
+            self.templates[name] = {}
+            if fname.with_suffix('.svg').is_file():
+                self.templates[name]['svg'] = t['filename'] + '.svg'
+            if fname.with_suffix('.png').is_file():
+                self.templates[name]['png'] = t['filename'] + '.png'
 
     def isReadOnly(self):
         return True
@@ -119,11 +118,9 @@ class LocalFileSource(FileSource):
             filename = filename[:-1] + (filename[-1] + '.' + ext,)
         return path.join(self.root, *filename)
 
-    def retrieveTemplate(self, name, progress=None, force=False, preferVector=False):
+    def retrieveTemplate(self, name, progress=None, force=False):
         try:
-            return path.join(
-                self.templatesRoot, self._selectTemplate(name, preferVector)
-            )
+            return self.templatesRoot / self._selectTemplate(name)
         except Exception:
             log.warning("The template '%s' could not be loaded", name)
             return None
@@ -302,9 +299,9 @@ class LiveFileSourceSSH(FileSource):
                 os.utime(cachep, (rstat.st_atime, rstat.st_mtime))
         return cachep
 
-    def retrieveTemplate(self, name, progress=None, force=False, preferVector=False):
+    def retrieveTemplate(self, name, progress=None, force=False):
         try:
-            filename = self._selectTemplate(name, preferVector)
+            filename = self._selectTemplate(name)
             with self._lock:
                 cachep = self._local(filename, branch=TEMPLDIR)
                 if force or not path.isfile(cachep):
@@ -560,9 +557,9 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
                 self._updated[local] = True
         return local
 
-    def retrieveTemplate(self, name, progress=None, force=False, preferVector=False):
+    def retrieveTemplate(self, name, progress=None, force=False):
         try:
-            t = self._selectTemplate(name, preferVector)
+            t = self._selectTemplate(name)
             return self._local(t, branch=TEMPLDIR)
         except Exception:
             log.warning("The template '%s' could not be loaded", name)

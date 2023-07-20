@@ -429,7 +429,7 @@ class Notebook(Document):
             t = self._bg[pageNum]
             if t:
 
-                def retrieve(preferVector=False):
+                def retrieve():
                     return self.fsource.retrieveTemplate(t)
 
                 template = Template(t, retrieve)
