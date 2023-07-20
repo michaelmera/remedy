@@ -282,7 +282,7 @@ class Document(Entry):
         else:
             return self.pages[pageNum]
 
-    def getPage(self, pageNum, force=False):
+    def getPage(self, pageNum, force=False) -> Page:
         pages = self.pages
         try:
             pid = self.getPageId(pageNum)
@@ -321,22 +321,23 @@ class Document(Entry):
 
         return self._makePage(layers, ver, pageNum)
 
-    def _fallbackPageCount(self):
+    def _fallbackPageCount(self) -> int:
         return 0
 
-    def totalPageCount(self):
+    def totalPageCount(self) -> int:
         if self.pageCount:
             return self.pageCount
         if self.pages:
             return len(self.pages)
+
         return self._fallbackPageCount()
 
-    def numHighlightedPages(self):
+    def numHighlightedPages(self) -> int:
         return sum(
             1 for _ in self.fsource.listSubItems(self.uid + '.highlights', ext='json')
         )
 
-    def numMarkedPages(self):
+    def numMarkedPages(self) -> int:
         return sum(1 for _ in self.fsource.listSubItems(self.uid, ext='rm'))
 
     def highlights(self, pageRange=None):
@@ -372,7 +373,7 @@ class Document(Entry):
             self.uid + '.highlights', pid, ext='json'
         )
 
-    def _makePage(self, layers, version, pageNum):
+    def _makePage(self, layers, version, pageNum) -> Page:
         return Page(layers, version, pageNum, document=self)
 
     def prefetch(self, progress=None):
@@ -398,11 +399,16 @@ class Document(Entry):
         return (base is None) or base.canRender()
 
 
-Page = namedtuple(
-    'Page',
-    ['layers', 'version', 'pageNum', 'document', 'background'],
-    defaults=[None, None, None],
-)
+class Page:
+    def __init__(
+        self, layers, version, pageNum=None, document=None, background=None
+    ) -> None:
+        self.layers = layers
+        self.version = version
+        self.pageNum = pageNum
+        self.document = document
+        self.background = background
+
 
 Template = namedtuple('Template', ['name', 'path'])
 
@@ -421,7 +427,7 @@ class Notebook(Document):
         except OSError:
             pass
 
-    def _makePage(self, layers, version, pageNum):
+    def _makePage(self, layers, version, pageNum) -> Page:
         t = self._bg.get(pageNum, None)
         if t:
             template = Template(t, path=(lambda: self.fsource.retrieveTemplate(t)))
@@ -435,21 +441,16 @@ class Notebook(Document):
 
 
 class PDFBasedDoc(Document):
-    # _pdf = None
-    # _pdf_lock = RLock()
-
     def _postInit(self):
         self._pdf = PDFBase(self)
 
-    def _makePage(self, layers, version, pageNum):
+    def _makePage(self, layers, version, pageNum) -> Page:
         return Page(layers, version, pageNum, document=self)
 
     def markedPages(self):
         for i, p in enumerate(self.pages):
             if self.fsource.exists(self.uid, p, ext='rm'):
                 yield i
-
-    # TODO: hasMarkedPages and hasHighlights (returning number of)
 
     def retrieveBaseDocument(self):
         b = self.baseDocumentName()
