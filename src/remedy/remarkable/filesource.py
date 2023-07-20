@@ -21,7 +21,7 @@ class FileSource:
 
     def readJson(self, remote, ext=None):
         try:
-            fname = self.retrieve((remote,), ext=ext)
+            fname = self.retrieve(remote, ext=ext)
             with open(fname) as f:
                 return json.load(f)
         except Exception as e:

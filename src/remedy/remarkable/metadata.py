@@ -578,8 +578,8 @@ class RemarkableIndex:
     def __init__(self, fsource, progress=(lambda x, tot: None)):
         self.fsource = fsource
         uids = list(fsource.listItems())
-        self.index = {ROOT_ID: RootFolder(self)}
         self.trash = TrashBin(self)
+        self.index = {ROOT_ID: RootFolder(self), TRASH_ID: self.trash}
         self.tags = {}
 
         j = 0
@@ -611,11 +611,15 @@ class RemarkableIndex:
                 self.trash.append(entry)
                 continue
 
-            if entry.parent is not None:
-                if entry.type == FOLDER_TYPE:
-                    self.index[entry.parent].folders.append(uid)
-                else:
-                    self.index[entry.parent].files.append(uid)
+        # create folders hierarchy
+        for uid, entry in self.index.items():
+            if entry.parent is None:
+                continue
+
+            if entry.type == FOLDER_TYPE:
+                self.index[entry.parent].folders.append(uid)
+            else:
+                self.index[entry.parent].files.append(uid)
 
     def _new_entry_prepare(self, uid, etype, meta, path=None):
         pass  # for subclasses to specialise
