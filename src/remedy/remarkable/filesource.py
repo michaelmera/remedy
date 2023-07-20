@@ -98,7 +98,7 @@ class LocalFileSource(FileSource):
 
         self.templatesRoot = Path(templatesRoot).expanduser()
         self.templates = {}
-        with open(templatesRoot / 'templates.json', encoding='utf-8') as f:
+        with open(self.templatesRoot / 'templates.json', encoding='utf-8') as f:
             idx = json.load(f)
 
         for t in idx['templates']:
