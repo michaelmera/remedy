@@ -261,12 +261,6 @@ class TrashBin(Folder):
         self._content = {}
         self._postInit()
 
-    def append(self, entry):
-        if entry.type == FOLDER_TYPE:
-            self.folders.append(entry.uid)
-        else:
-            self.files.append(entry.uid)
-
     def items(self):
         yield from self.folders
         yield from self.files
@@ -605,21 +599,18 @@ class RemarkableIndex:
                     }
                 self.tags[t['name']]['pages'].append({'doc': uid, 'page': t['pageId']})
 
-            entry = Entry.from_dict(self, uid, metadata, content)
-            self.index[uid] = entry
-            if entry.deleted or entry.parent == TRASH_ID:
-                self.trash.append(entry)
-                continue
+            self.index[uid] = Entry.from_dict(self, uid, metadata, content)
 
         # create folders hierarchy
         for uid, entry in self.index.items():
-            if entry.parent is None:
+            parent = TRASH_ID if entry.deleted else entry.parent
+            if parent is None:
                 continue
 
             if entry.type == FOLDER_TYPE:
-                self.index[entry.parent].folders.append(uid)
+                self.index[parent].folders.append(uid)
             else:
-                self.index[entry.parent].files.append(uid)
+                self.index[parent].files.append(uid)
 
     def _new_entry_prepare(self, uid, etype, meta, path=None):
         pass  # for subclasses to specialise
@@ -652,9 +643,6 @@ class RemarkableIndex:
         if uid in self.index:
             return self.index[uid]
 
-        if uid == TRASH_ID:
-            return self.trash
-
         raise RemarkableError('Uid %s not found!' % uid)
 
     def allUids(self):
@@ -663,16 +651,18 @@ class RemarkableIndex:
     def ancestryOf(self, uid, exact=True, includeSelf=False, reverse=True):
         if not exact:
             uid = self.matchId(uid)
+
         p = []
-        while uid:
-            if uid in self.index:
-                p.append(uid)
-                uid = self.index[uid].parent
-            elif uid == TRASH_ID:
-                p.append(TRASH_ID)
-                break
-            else:
+        while uid != TRASH_ID and uid != ROOT_ID:
+            if uid not in self.index:
+                # hierarchy is broken: this is a dangling entry
                 return None
+
+            p.append(uid)
+
+            entry = self.get(uid)
+            uid = TRASH_ID if entry.deleted else entry.parent
+
         if not includeSelf:
             p = p[1:]
         if reverse:
@@ -703,9 +693,7 @@ class RemarkableIndex:
         return None
 
     def isFolder(self, uid):
-        return uid == TRASH_ID or (
-            uid in self.index and self.index[uid].type == FOLDER_TYPE
-        )
+        return uid in self.index and self.index[uid].type in (FOLDER_TYPE, TRASH_ID)
 
     def updatedOn(self, uid):
         try:
@@ -718,7 +706,7 @@ class RemarkableIndex:
         return self.get(uid).visibleName
 
     def isDeleted(self, uid):
-        return uid != TRASH_ID and (
+        return uid in self.index and (
             self.index[uid].deleted or self.index[uid].parent == TRASH_ID
         )
 
@@ -741,10 +729,9 @@ class RemarkableIndex:
     def scanFolders(self, uid=ROOT_ID):
         if isinstance(uid, Entry):
             n = uid
-        elif uid == TRASH_ID:
-            n = self.trash
         else:
             n = self.index[uid]
+
         if isinstance(n, Folder):
             stack = [n]  # stack of folders
             while stack:
