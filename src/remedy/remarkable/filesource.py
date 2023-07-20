@@ -31,14 +31,14 @@ class FileSource:
         """Don't try uploading if it is readOnly!"""
         return True
 
-    def retrieve(self, *remote, ext=None, progress=None, force=False):
+    def retrieve(self, *remote, ext=None, progress=None):
         """
         Given a path `filename` relative to the documents root
         return a local path with the data in it.
         """
         raise NotImplementedError
 
-    def retrieveTemplate(self, name, progress=None, force=False):
+    def retrieveTemplate(self, name, progress=None):
         """
         Given a path `filename` relative to the documents root
         return a local path with the data in it.
@@ -57,16 +57,16 @@ class FileSource:
     def makeDir(self, *remote):
         raise NotImplementedError
 
-    def prefetchMetadata(self, progress=None, force=False):
+    def prefetchMetadata(self, progress=None) -> None:
         raise NotImplementedError
 
-    def prefetchDocument(self, uid, progress=None, force=False):
+    def prefetchDocument(self, uid, progress=None) -> None:
         raise NotImplementedError
 
     def exists(self, *filename, ext=None):
         raise NotImplementedError
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         return
 
     def close(self):
@@ -113,22 +113,22 @@ class LocalFileSource(FileSource):
     def isReadOnly(self):
         return True
 
-    def retrieve(self, *filename, ext=None, progress=None, force=False):
+    def retrieve(self, *filename, ext=None, progress=None):
         if ext:
             filename = filename[:-1] + (filename[-1] + '.' + ext,)
         return path.join(self.root, *filename)
 
-    def retrieveTemplate(self, name, progress=None, force=False):
+    def retrieveTemplate(self, name, progress=None):
         try:
             return self.templatesRoot / self._selectTemplate(name)
         except Exception:
             log.warning("The template '%s' could not be loaded", name)
             return None
 
-    def prefetchMetadata(self, progress=None, force=False):
+    def prefetchMetadata(self, progress=None) -> None:
         pass
 
-    def prefetchDocument(self, uid, progress=None, force=False):
+    def prefetchDocument(self, uid, progress=None) -> None:
         pass
 
     def exists(self, *filename, ext=None):
@@ -136,7 +136,7 @@ class LocalFileSource(FileSource):
             filename = filename[:-1] + (filename[-1] + '.' + ext,)
         return path.isfile(path.join(self.root, *filename))
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         pass
 
     def listItems(self):
@@ -273,7 +273,7 @@ class LiveFileSourceSSH(FileSource):
     def isReadOnly(self):
         return False
 
-    def retrieve(self, *filename, ext=None, progress=None, force=False):
+    def retrieve(self, *filename, ext=None, progress=None):
         if ext:
             filename = filename[:-1] + (filename[-1] + '.' + ext,)
         cachep = self._local(*filename)
@@ -286,25 +286,23 @@ class LiveFileSourceSSH(FileSource):
             found = path.isfile(cachep)
             if found:
                 lstat = os.stat(cachep)
-                force = (
-                    force
-                    or (lstat.st_mtime != rstat.st_mtime)
-                    or (lstat.st_size != rstat.st_size)
+                found = (lstat.st_mtime == rstat.st_mtime) and (
+                    lstat.st_size == rstat.st_size
                 )
                 # not fool-proof but good enough?
                 # There is always the option of setting persist_cache: false
                 # for the source
-            if force or not found:
+            if not found:
                 self.scp.get(remp, cachep)
                 os.utime(cachep, (rstat.st_atime, rstat.st_mtime))
         return cachep
 
-    def retrieveTemplate(self, name, progress=None, force=False):
+    def retrieveTemplate(self, name, progress=None):
         try:
             filename = self._selectTemplate(name)
             with self._lock:
                 cachep = self._local(filename, branch=TEMPLDIR)
-                if force or not path.isfile(cachep):
+                if not path.isfile(cachep):
                     remp = self._remote(filename, branch=TEMPLDIR)
                     self.scp.get(remp, cachep)
             return cachep
@@ -312,17 +310,11 @@ class LiveFileSourceSSH(FileSource):
             log.warning("The template '%s' could not be loaded", name)
             return None
 
-    def prefetchMetadata(self, progress=None, force=False):
+    def prefetchMetadata(self, progress=None) -> None:
         pass
-        # for uid in self.listItems():
-        #     self.scp.get(self._remote(uid + '.metadata'), self._local())
-        #     self.scp.get(self._remote(uid + '.content'), self._local())
-        #     if self._isfile(self._remote(uid + '.pagedata')):
-        #       self.scp.get(self._remote(uid + '.pagedata'), self._local())
 
-    def prefetchDocument(self, uid, progress=None, force=False):
+    def prefetchDocument(self, uid, progress=None) -> None:
         with self._lock:
-            # self.scp.get(self._remote(uid), self._local(uid), recursive=True)
             if self._isfile(self._remote(uid + '.pdf')):
                 self.scp.get(self._remote(uid + '.pdf'), self._local(uid))
             if self._isfile(self._remote(uid + '.epub')):
@@ -334,25 +326,27 @@ class LiveFileSourceSSH(FileSource):
         with self._lock:
             return self._isfile(self._remote(*filename))
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         if not self.persist_cache:
             log.debug('Clearing cache')
             shutil.rmtree(self.cache_dir, ignore_errors=True)
         self.refreshXochitl()
 
-    def refreshXochitl(self, force=False):
-        if self._dirty or force:
-            try:
-                _, out, _ = self.ssh.exec_command('/bin/systemctl restart xochitl')
-                if out.channel.recv_exit_status() == 0:
-                    self._dirty = False
-            except paramiko.SSHException as e:
-                log.warning(
-                    'Could not restart xochitl.'
-                    'This is most probably due to the tablet going to sleep.'
-                    'A manual reboot of the tablet is recommended.'
-                )
-                log.debug('SSH Error: %s', e)
+    def refreshXochitl(self) -> None:
+        if not self._dirty:
+            return
+
+        try:
+            _, out, _ = self.ssh.exec_command('/bin/systemctl restart xochitl')
+            if out.channel.recv_exit_status() == 0:
+                self._dirty = False
+        except paramiko.SSHException as e:
+            log.warning(
+                'Could not restart xochitl.'
+                'This is most probably due to the tablet going to sleep.'
+                'A manual reboot of the tablet is recommended.'
+            )
+            log.debug('SSH Error: %s', e)
 
     def listItems(self):
         with self._lock:
@@ -545,19 +539,19 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
             os.makedirs(dirname)
         return subprocess.run(self.RSYNC + ['-zt', self._remote_rsync(fr), to])
 
-    def retrieve(self, *filename, ext=None, progress=None, force=False):
+    def retrieve(self, *filename, ext=None, progress=None):
         if ext:
             filename = filename[:-1] + (filename[-1] + '.' + ext,)
         local = self._local(*filename)
         with self._lock:
-            if force or not (path.isfile(local) and local in self._updated):
+            if not (path.isfile(local) and local in self._updated):
                 if not self._isfile(self._remote(*filename)):
                     return None
                 self._file_download(self._remote(*filename), local)
                 self._updated[local] = True
         return local
 
-    def retrieveTemplate(self, name, progress=None, force=False):
+    def retrieveTemplate(self, name, progress=None):
         try:
             t = self._selectTemplate(name)
             return self._local(t, branch=TEMPLDIR)
@@ -565,7 +559,7 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
             log.warning("The template '%s' could not be loaded", name)
             return None
 
-    def prefetchMetadata(self, progress=None, force=False):
+    def prefetchMetadata(self, progress=None) -> None:
         if self.cache_mode == 'full_mirror':
             _excludes = []
             _includes = []
@@ -587,7 +581,7 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
                 if entry.is_file():
                     self._updated[entry.path] = True
 
-    def prefetchDocument(self, uid, progress=None, force=False):
+    def prefetchDocument(self, uid, progress=None) -> None:
         with self._lock:
             self._bulk_download(
                 self._remote(uid), self._local(uid), excludes=[], progress=progress
@@ -603,6 +597,6 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
                     if entry.is_file():
                         self._updated[entry.path] = True
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         log.debug('CLEANUP: %s', self._dirty)
         self.refreshXochitl()

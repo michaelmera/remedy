@@ -286,7 +286,7 @@ class Document(Entry):
         pages = self.pages
         try:
             pid = self.getPageId(pageNum)
-            rmfile = self.fsource.retrieve(self.uid, pid, ext='rm', force=False)
+            rmfile = self.fsource.retrieve(self.uid, pid, ext='rm')
             with open(rmfile, 'rb') as f:
                 (ver, layers) = readLines(f)
         except:
