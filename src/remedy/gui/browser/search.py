@@ -23,30 +23,6 @@ from remedy.gui.browser.delegates import PinnedDelegate
 from remedy.remarkable.metadata import RemarkableError
 from remedy.utils import log
 
-### This proxy can be attached to the model of a DocTree to flatten the hierarchy
-# class FlatRemarkableProxyModel(QAbstractProxyModel):
-
-#   def __init__(self, tree):
-#     QAbstractProxyModel.__init__(self)
-#     self._uids = list(tree.index.allUids())
-#     self._rows = dict(enumerate(self._uids))
-#     self._tree = tree
-
-#   def mapFromSource(self, sourceIndex):
-#     if sourceIndex.isValid():
-#       item = self._tree.itemFromIndex(sourceIndex)
-#       entry = item.entry
-#       if entry:
-#         return self.createIndex(self._rows[entry.uid], sourceIndex.column())
-#     return QModelIndex()
-
-#   def mapToSource(self, proxyIndex):
-#     if proxyIndex.isValid() and proxyIndex.row() < len(self._uids):
-#       uid = self._uids[proxyIndex.row()]
-#       idx = self._tree.indexFromItem(self._tree.itemOf(uid))
-#       return self.createIndex(idx.row(), idx.column())
-#     return QModelIndex()
-
 
 class FlatRemarkableIndexModel(QAbstractTableModel):
     _fadedColor = Qt.GlobalColor.black

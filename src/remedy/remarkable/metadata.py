@@ -45,10 +45,6 @@ class RemarkableUidCollision(RemarkableError):
     pass
 
 
-METADATA = 1
-CONTENT = 2
-BOTH = 3
-
 # TODO:
 # - MoveTo method of index (special case for trash, take care of deleted field)
 # - Consider an `update` method for Entry, triggering a save of json files on tablet
@@ -178,11 +174,11 @@ class Entry:
     def allTags(self):
         return self.allDocTags() | self.allPageTags()
 
-    def get(self, field, default=None, where=BOTH):
-        if field in self._metadata and where & METADATA:
+    def get(self, field, default=None):
+        if field in self._metadata:
             return self._metadata[field]
 
-        if field in self._content and where & CONTENT:
+        if field in self._content:
             return self._content[field]
 
         return default
