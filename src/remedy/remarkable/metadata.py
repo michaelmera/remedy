@@ -114,7 +114,7 @@ class Entry:
     def ancestry(self):
         return self.index.ancestryOf(self.uid, exact=True)
 
-    def path(self, delim=None):
+    def path(self, delim='/'):
         return self.index.pathOf(self.uid, delim=delim)
 
     def fullPath(self, includeSelf=False):
@@ -230,7 +230,6 @@ class Document(Entry):
             return self.pages[pageNum]
 
     def getPage(self, pageNum) -> Page:
-        pages = self.pages
         try:
             pid = self.getPageId(pageNum)
             rmfile = self.fsource.retrieve(self.uid, pid, ext='rm')
@@ -629,17 +628,15 @@ class RemarkableIndex:
             p = reversed(p)
         return p
 
-    def pathOf(self, uid, exact=True, includeSelf=False, delim=None):
-        p = map(lambda x: self.nameOf(x), self.ancestryOf(uid, exact, includeSelf))
-        if delim is None:
-            return p
-        else:
-            return delim.join(p)
+    def pathOf(
+        self, uid, exact: bool = True, includeSelf: bool = False, delim: str = '/'
+    ) -> str:
+        return delim.join(
+            self.nameOf(x) for x in self.ancestryOf(uid, exact, includeSelf)
+        )
 
-    def fullPathOf(self, uid, includeSelf=False):
-        p = self.pathOf(
-            uid, delim='/', includeSelf=includeSelf
-        )  # + '/' + self.nameOf(uid)
+    def fullPathOf(self, uid, includeSelf: bool = False):
+        p = self.pathOf(uid, includeSelf=includeSelf)
         if (not includeSelf) or self.isFolder(uid):
             p += '/'
         if not p.startswith('/'):
