@@ -2,6 +2,7 @@ import traceback
 
 from PyQt5.QtCore import QRunnable, QThreadPool
 
+from remedy.remarkable.metadata import RemarkableIndex
 from remedy.utils import log
 
 
@@ -12,10 +13,10 @@ class NewEntryCancelled(Exception):
 # clearly this would be better as a sort of factory
 # with _pending indexed by fsource but this is good enough for now
 class NewEntryWorker(QRunnable):
-    def __init__(self, index, **args):
+    def __init__(self, index: RemarkableIndex, **args) -> None:
         QRunnable.__init__(self)
         self.index = index
-        self.uid = index.reserveUid()
+        self.uid = index.reserve_uid()
         NewEntryWorker._pending[self.uid] = self
         self._args = args
         self._cancel = False
@@ -67,12 +68,12 @@ NewEntryWorker._pending = {}
 
 class UploadWorker(NewEntryWorker):
     def do(self):
-        self.index.newDocument(uid=self.uid, progress=self._progress, **self._args)
+        self.index.newDocument(self.uid, progress=self._progress, **self._args)
 
 
 class NewFolderWorker(NewEntryWorker):
     def do(self):
-        self.index.newFolder(uid=self.uid, progress=self._progress, **self._args)
+        self.index.newFolder(self.uid, progress=self._progress, **self._args)
 
 
 class Worker(QRunnable):

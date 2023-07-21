@@ -7,9 +7,11 @@ from copy import deepcopy
 from os import stat
 from pathlib import Path
 from threading import RLock
+from typing import Any
 
 import arrow
 
+from remedy.remarkable.filesource import FileSource
 from remedy.remarkable.lines import Layer, readLines
 from remedy.remarkable.pdfbase import PDFBase
 from remedy.utils import deepupdate, log
@@ -473,7 +475,9 @@ FOLDER_METADATA = {
 class RemarkableIndex:
     _upd_lock = RLock()
 
-    def __init__(self, fsource, progress=(lambda x, tot: None)):
+    def __init__(self, fsource: FileSource, progress=(lambda x, tot: None)) -> None:
+        self._reserved_uids: set[str] = set()
+
         self.fsource = fsource
         uids = list(fsource.listItems())
         self.root = Folder(
@@ -500,8 +504,8 @@ class RemarkableIndex:
             content={},
             type_name='trash',
         )
-        self.index = {ROOT_ID: self.root, TRASH_ID: self.trash}
-        self.tags = {}
+        self.index: dict[str, Entry] = {ROOT_ID: self.root, TRASH_ID: self.trash}
+        self.tags: dict[str, Any] = {}
 
         j = 0
         for j, uid in enumerate(uids):
@@ -655,25 +659,20 @@ class RemarkableIndex:
                 for f in n.folders:
                     stack.append(self.index[f])
 
-    _reservedUids = set()
-
-    def reserveUid(self):
+    def reserve_uid(self) -> str:
         # collisions are highly unlikely, but good to check
         uid = str(uuid.uuid4())
-        while uid in self.index or uid in self._reservedUids:
+        while uid in self.index or uid in self._reserved_uids:
             uid = str(uuid.uuid4())
-        self._reservedUids.add(uid)
+        self._reserved_uids.add(uid)
         return uid
 
-    def newFolder(self, uid=None, progress=None, **metadata):
+    def newFolder(self, uid: str, progress=None, **metadata):
         try:
             if self.isReadOnly():
                 raise RemarkableSourceError(
                     "The file source '%s' is read-only" % self.fsource.name
                 )
-
-            if not uid:
-                uid = self.reserveUid()
 
             log.info('Preparing creation of %s', uid)
             self._new_entry_prepare(uid, FOLDER, metadata)
@@ -704,7 +703,7 @@ class RemarkableIndex:
 
             self.index[uid] = d = Folder(self, uid, meta, {}, type_name='folder')
             self.index[d.parent].folders.append(uid)
-            self._reservedUids.discard(uid)
+            self._reserved_uids.discard(uid)
 
             self._new_entry_complete(uid, FOLDER, metadata)
             return uid
@@ -715,15 +714,13 @@ class RemarkableIndex:
             self._new_entry_error(e, uid, FOLDER, metadata)
             raise e
 
-    def newDocument(self, path=None, uid=None, content={}, progress=None, **metadata):
+    def newDocument(self, uid: str, path=None, content={}, progress=None, **metadata):
         try:
             if self.isReadOnly():
                 raise RemarkableSourceError(
                     "The file source '%s' is read-only" % self.fsource.name
                 )
 
-            if not uid:
-                uid = self.reserveUid()
             path = Path(path)
             ext = path.suffix.lower()
             if ext == '.pdf':
@@ -789,7 +786,7 @@ class RemarkableIndex:
                 d = PDFBasedDoc(self, uid, meta, cont, type_name='epub')
             self.index[uid] = d
             self.index[d.parent].files.append(uid)
-            self._reservedUids.discard(uid)
+            self._reserved_uids.discard(uid)
 
             p(totBytes)
             self._new_entry_complete(uid, etype, metadata, path)
@@ -870,12 +867,13 @@ class RemarkableIndex:
             if not self.isDeleted(uid):
                 self.update(uid, parent=TRASH_ID)
 
-    def rename(self, uid, new_name):
+    def rename(self, uid: str, new_name):
         self.update(uid, visibleName=new_name)
 
-    def newFolderWith(self, uids=[], **metadata):
+    def newFolderWith(self, uids: list[str] = [], **metadata) -> None:
         with self._upd_lock:
-            fuid = self.newFolder(**metadata)
+            fuid = self.reserve_uid()
+            self.newFolder(fuid, **metadata)
             for uid in uids:
                 self.update(uid, parent=fuid)
 
