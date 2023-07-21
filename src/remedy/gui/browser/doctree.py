@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import arrow
 from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QContextMenuEvent, QIcon, QPixmap
 from PyQt5.QtWidgets import (
@@ -204,6 +205,7 @@ class DocTreeItem(QTreeWidgetItem):
         self.setData(0, Qt.ItemDataRole.UserRole, entry.uid)
         flags = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
         self.setText(5, ','.join(entry.allTags()))
+
         # commented flag settings should be uncommented once move is implemented
         if isinstance(entry, Document):
             flags |= Qt.ItemFlag.ItemNeverHasChildren  # | Qt.ItemFlag.ItemIsDragEnabled
@@ -214,7 +216,7 @@ class DocTreeItem(QTreeWidgetItem):
             self.setIcon(0, icon[entry.type_name])
             self.setText(3, type_name[entry.type_name])
 
-            self.setText(1, entry.updatedOn())
+            self.setText(1, _format_date(entry.last_updated()))
             self.setText(2, '1' if entry.pinned else '')
             if entry.shouldHaveBaseDocument() and not entry.hasBaseDocument():
                 self.warning(
@@ -255,8 +257,8 @@ class DocTreeItem(QTreeWidgetItem):
             # If we had access to sort order we could
             # always place folders first (alphabetically) regardless of sort order.
             # But we don't so we just sort by date.
-            a = self._entry.updatedDate()
-            b = other._entry.updatedDate()
+            a = self._entry.last_updated()
+            b = other._entry.last_updated()
             if a is None:
                 return False
             if b is None:
@@ -550,3 +552,10 @@ class DocTree(QTreeWidget):
     def dragLeaveEvent(self, event):
         self._dropTargetItem = None
         super().dragLeaveEvent(event)
+
+
+def _format_date(timestamp: int | None) -> str:
+    if timestamp is None:
+        return 'Unknown'
+
+    return arrow.get(int(timestamp) / 1000).humanize()

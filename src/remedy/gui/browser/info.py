@@ -1,3 +1,4 @@
+import arrow
 from PyQt5.QtCore import Qt, QThreadPool, pyqtSlot
 from PyQt5.QtGui import QFont, QIcon, QImage, QPalette, QPixmap
 from PyQt5.QtWidgets import (
@@ -177,12 +178,12 @@ class InfoPanel(QWidget):
         self.entry = entry
         self._resetDetails()
         # DETAILS
-        self._addDetailRow('Updated', entry.updatedFullDate(None))
+        self._addDetailRow('Updated', _format_date(entry.last_updated()))
         if isinstance(entry, Folder):
             self._addDetailRow('Folders', '%d' % len(entry.folders))
             self._addDetailRow('Files', '%d' % len(entry.files))
         elif isinstance(entry, Document):
-            self._addDetailRow('Opened', entry.openedFullDate(None))
+            self._addDetailRow('Opened', _format_date(entry.last_opened()))
             if (
                 entry.originalPageCount
                 and entry.originalPageCount > 0
@@ -298,3 +299,10 @@ class InfoPanel(QWidget):
 
 
 InfoPanel.thumbs = {}
+
+
+def _format_date(timestamp: int | None) -> str | None:
+    if timestamp is None:
+        return None
+
+    return arrow.get(int(timestamp) / 1000).format('d MMM YYYY [at] hh:mm')

@@ -1,3 +1,4 @@
+import arrow
 from PyQt5.QtCore import (
     QAbstractListModel,
     QAbstractTableModel,
@@ -114,7 +115,7 @@ class FlatRemarkableIndexModel(QAbstractTableModel):
                 return '1' if entry.pinned else '0'
         elif index.column() == 2:  # updated
             if role == Qt.ItemDataRole.DisplayRole:
-                return entry.updatedOn()
+                return _format_date(entry.last_updated())
         elif index.column() == 3:  # type
             if role == Qt.ItemDataRole.DisplayRole:
                 return entry.type_name.title()
@@ -423,3 +424,10 @@ class SearchBar(QWidget):
             pos = self.search.rect().bottomRight()
             pos = self.search.mapToGlobal(pos) - QPoint(menu.sizeHint().width(), 0)
             menu.popup(pos)
+
+
+def _format_date(timestamp: int | None) -> str:
+    if timestamp is None:
+        return 'Unknown'
+
+    return arrow.get(int(timestamp) / 1000).humanize()

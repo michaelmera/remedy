@@ -116,36 +116,11 @@ class Entry:
     def fullPath(self, includeSelf=False):
         return self.index.fullPathOf(self.uid, includeSelf=includeSelf)
 
-    def updatedOn(self, default='Unknown'):
-        try:
-            return self.updatedDate().humanize()
-        except Exception as e:
-            return default
+    def last_updated(self) -> int | None:
+        return self.lastModified
 
-    _updatedDate = None
-
-    def updatedDate(self):
-        if self._updatedDate is None:
-            try:
-                self._updatedDate = arrow.get(int(self.lastModified) / 1000)
-            except Exception:
-                # self._updatedDate = arrow.utcnow()
-                pass
-        return self._updatedDate
-
-    def updatedFullDate(self, default='Unknown'):
-        try:
-            return self.updatedDate().format('d MMM YYYY [at] hh:mm')
-        except Exception as e:
-            return default
-
-    def openedFullDate(self, default='Unknown'):
-        try:
-            return arrow.get(int(self.lastOpened) / 1000).format(
-                'd MMM YYYY [at] hh:mm'
-            )
-        except Exception as e:
-            return default
+    def last_opened(self) -> int | None:
+        return self.lastOpened
 
     def size(self):
         if self.sizeInBytes is None:
@@ -191,7 +166,7 @@ class Entry:
 
     def __dir__(self):
         return (
-            ['name', 'updatedOn', 'isDeleted', 'get', 'fsource']
+            ['name', 'last_opened', 'last_updated', 'isDeleted', 'get', 'fsource']
             + list(self._metadata.keys())
             + list(self._content.keys())
         )
@@ -641,13 +616,6 @@ class RemarkableIndex:
 
     def isFolder(self, uid):
         return uid in self.index and self.index[uid].type_name in ('folder', 'trash')
-
-    def updatedOn(self, uid):
-        try:
-            updated = arrow.get(int(self.lastModifiedOf(uid)) / 1000).humanize()
-        except Exception as e:
-            updated = self.lastModifiedOf(uid) or 'Unknown'
-        return updated
 
     def nameOf(self, uid):
         return self.get(uid).visibleName
