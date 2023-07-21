@@ -19,6 +19,9 @@ class FileSource:
     Should guarantee thread safety if used on disjoint paths.
     """
 
+    def __init__(self, name: str) -> None:
+        self.name = name
+
     def readJson(self, remote, ext=None):
         try:
             fname = self.retrieve(remote, ext=ext)
@@ -54,6 +57,12 @@ class FileSource:
         """
         raise NotImplementedError
 
+    def remove(self, *remote, progress=None):
+        raise NotImplementedError
+
+    def removeDir(self, *remote, progress=None):
+        raise NotImplementedError
+
     def makeDir(self, *remote):
         raise NotImplementedError
 
@@ -86,7 +95,8 @@ class LocalFileSource(FileSource):
     """An abstraction over a local backup folder"""
 
     def __init__(self, name, root, templatesRoot=None):
-        self.name = name
+        super().__init__(name)
+
         self.root = Path(root).expanduser()
         self.templatesRoot = None
 
@@ -181,8 +191,9 @@ class LiveFileSourceSSH(FileSource):
         persist_cache=True,
         **kw,
     ):
+        super().__init__(name)
+
         self.ssh = ssh
-        self.name = name
         self.persist_cache = persist_cache
 
         self.cache_dir = cache_dir = path.join(path.expanduser(cache_dir), id)
@@ -429,7 +440,7 @@ class LiveFileSourceRsync(LiveFileSourceSSH):
         host_key_policy='ask',
         **kw,
     ):
-        LiveFileSourceSSH.__init__(
+        super().__init__(
             self,
             ssh,
             name=name,

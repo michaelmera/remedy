@@ -6,7 +6,7 @@ from remedy.remarkable.metadata import ROOT_ID, TRASH_ID, RemarkableIndex
 
 class MemorySource(FileSource):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__('MemorySource')
         self.items = {}
 
     def readJson(self, remote, ext=None):
