@@ -735,23 +735,6 @@ class RemarkableIndex:
             log.info('Preparing creation of %s', uid)
             self._new_entry_prepare(uid, etype, metadata, path)
 
-            totBytes = 0
-            if callable(progress):
-
-                def p(x):
-                    progress(x, totBytes)
-                    self._new_entry_progress(uid, x, totBytes)
-
-                def up(x, t):
-                    p(400 + x)
-
-            else:
-
-                def p(x, t=0):
-                    pass
-
-                up = None
-
             if self.fsource.exists(uid, ext='metadata'):
                 raise RemarkableUidCollision(
                     'Attempting to create new document but chosen uuid is in use'
@@ -769,6 +752,22 @@ class RemarkableIndex:
 
             # imaginary 100bytes per json file
             totBytes = 400 + stat(path).st_size
+            if callable(progress):
+
+                def p(x: int) -> None:
+                    progress(x, totBytes)
+                    self._new_entry_progress(uid, x, totBytes)
+
+                def up(x: int, total: int) -> None:
+                    p(400 + x)
+
+            else:
+
+                def p(x: int) -> None:
+                    pass
+
+                def up(x: int, total: int) -> None:
+                    pass
 
             p(0)
             self.fsource.store(meta, uid + '.metadata')
