@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 import uuid
 from collections import namedtuple
+from collections.abc import Iterable
 from copy import deepcopy
+from enum import Enum
 from os import stat
 from pathlib import Path
 from threading import RLock
-from typing import Any
+from typing import Any, cast
 
 import arrow
 
@@ -16,23 +18,18 @@ from remedy.remarkable.lines import Layer, readLines
 from remedy.remarkable.pdfbase import PDFBase
 from remedy.utils import deepupdate, log
 
+Uid = str
+
 FOLDER_TYPE = 'CollectionType'
 DOCUMENT_TYPE = 'DocumentType'
 
-NOTEBOOK = 1
-PDF = 2
-EPUB = 4
-FOLDER = 8
-UNKNOWN = 16
-DELETED_NOTEBOOK = NOTEBOOK << 4
-DELETED_PDF = PDF << 4
-DELETED_EPUB = EPUB << 4
-DELETED_FOLDER = FOLDER << 4
 
-NOTEBOOK = NOTEBOOK | DELETED_NOTEBOOK
-PDF = PDF | DELETED_PDF
-EPUB = EPUB | DELETED_EPUB
-FOLDER = FOLDER | DELETED_FOLDER
+class EType(Enum):
+    NOTEBOOK = 1
+    PDF = 2
+    EPUB = 4
+    FOLDER = 8
+    UNKNOWN = 16
 
 
 class RemarkableError(Exception):
@@ -86,22 +83,22 @@ class Entry:
 
         self._postInit()
 
-    def _postInit(self):
+    def _postInit(self) -> None:
         pass
 
-    def isRoot(self):
+    def isRoot(self) -> bool:
         return self.uid == ROOT_ID and self.parent is None
 
-    def name(self):
+    def name(self) -> str:
         return self._metadata.get('visibleName')
 
-    def isDeleted(self):
+    def isDeleted(self) -> bool:
         return self.index.isDeleted(self.uid)
 
-    def isIndirectlyDeleted(self):
+    def isIndirectlyDeleted(self) -> bool:
         return self.index.isIndirectlyDeleted(self.uid)
 
-    def isFolder(self):
+    def isFolder(self) -> bool:
         return self.index.isFolder(self.uid)
 
     def parentEntry(self):
@@ -109,8 +106,8 @@ class Entry:
             return None
         return self.index.get(self.parent)
 
-    def ancestry(self):
-        return self.index.ancestryOf(self.uid, exact=True)
+    def ancestry(self) -> Iterable[Uid]:
+        return self.index.ancestryOf(self.uid)
 
     def path(self, delim='/'):
         return self.index.pathOf(self.uid, delim=delim)
@@ -157,13 +154,17 @@ class Entry:
 
         return default
 
+    @property
+    def fsource(self) -> FileSource:
+        return self.index.fsource
+
     def __getattr__(self, field):
-        if field == 'fsource' and self.index:
-            return self.index.fsource
         if field in self._metadata:
             return self._metadata[field]
+
         if field in self._content:
             return self._content[field]
+
         return None
 
     def __dir__(self):
@@ -175,9 +176,9 @@ class Entry:
 
 
 class Folder(Entry):
-    def _postInit(self):
-        self.files = []
-        self.folders = []
+    def _postInit(self) -> None:
+        self.files: list[Uid] = []
+        self.folders: list[Uid] = []
 
     def items(self):
         yield from self.folders
@@ -188,8 +189,8 @@ class Unknown(Entry):
     ...
 
 
-ROOT_ID = ''
-TRASH_ID = 'trash'
+ROOT_ID: Uid = ''
+TRASH_ID: Uid = 'trash'
 
 
 class Document(Entry):
@@ -329,7 +330,7 @@ Template = namedtuple('Template', ['name', 'path'])
 
 
 class Notebook(Document):
-    def _postInit(self):
+    def _postInit(self) -> None:
         try:
             pfile = self.fsource.retrieve(self.uid, ext='pagedata')
             with open(pfile, encoding='utf-8') as f:
@@ -348,7 +349,7 @@ class Notebook(Document):
 
 
 class PDFBasedDoc(Document):
-    def _postInit(self):
+    def _postInit(self) -> None:
         self._pdf = PDFBase(self)
 
     def _makePage(self, layers, version, pageNum) -> Page:
@@ -453,8 +454,8 @@ EPUB_BASE_CONTENT = {
 }
 
 DOC_BASE_CONTENT = {
-    PDF: PDF_BASE_CONTENT,
-    EPUB: EPUB_BASE_CONTENT,
+    EType.PDF: PDF_BASE_CONTENT,
+    EType.EPUB: EPUB_BASE_CONTENT,
 }
 
 
@@ -476,7 +477,7 @@ class RemarkableIndex:
     _upd_lock = RLock()
 
     def __init__(self, fsource: FileSource, progress=(lambda x, tot: None)) -> None:
-        self._reserved_uids: set[str] = set()
+        self._reserved_uids: set[Uid] = set()
 
         self.fsource = fsource
         uids = list(fsource.listItems())
@@ -504,8 +505,8 @@ class RemarkableIndex:
             content={},
             type_name='trash',
         )
-        self.index: dict[str, Entry] = {ROOT_ID: self.root, TRASH_ID: self.trash}
-        self.tags: dict[str, Any] = {}
+        self.index: dict[Uid, Entry] = {ROOT_ID: self.root, TRASH_ID: self.trash}
+        self.tags: dict[Uid, Any] = {}
 
         j = 0
         for j, uid in enumerate(uids):
@@ -538,53 +539,51 @@ class RemarkableIndex:
             if parent is None:
                 continue
 
-            if entry.type == FOLDER_TYPE:
+            if entry.isFolder():
                 self.index[parent].folders.append(uid)
             else:
                 self.index[parent].files.append(uid)
 
-    def _new_entry_prepare(self, uid, etype, meta, path=None):
+    def _new_entry_prepare(self, uid: Uid, etype: EType, meta, path=None) -> None:
         pass  # for subclasses to specialise
 
-    def _new_entry_progress(self, uid, done, tot):
+    def _new_entry_progress(self, uid: Uid, done, tot) -> None:
         pass  # for subclasses to specialise
 
-    def _new_entry_error(self, exception, uid, etype, meta, path=None):
+    def _new_entry_error(
+        self, exception, uid: Uid, etype: EType, meta, path=None
+    ) -> None:
         pass  # for subclasses to specialise
 
-    def _new_entry_complete(self, uid, etype, meta, path=None):
+    def _new_entry_complete(self, uid: Uid, etype: EType, meta, path=None) -> None:
         pass  # for subclasses to specialise
 
-    def _update_entry_prepare(self, uid, new_meta, new_content):
+    def _update_entry_prepare(self, uid: Uid, new_meta, new_content) -> None:
         pass  # for subclasses to specialise
 
-    def _update_entry_complete(self, uid, new_meta, new_content):
+    def _update_entry_complete(self, uid: Uid, new_meta, new_content) -> None:
         pass  # for subclasses to specialise
 
-    def _update_entry_error(self, exception, uid, new_meta, new_content):
+    def _update_entry_error(self, exception, uid: Uid, new_meta, new_content) -> None:
         pass  # for subclasses to specialise
 
-    def isReadOnly(self):
+    def isReadOnly(self) -> bool:
         return self.fsource.isReadOnly()
 
-    def get(self, uid):
+    def get(self, uid: Uid) -> Entry:
         if uid in self.index:
             return self.index[uid]
 
         raise RemarkableError('Uid %s not found!' % uid)
 
-    def allUids(self):
+    def allUids(self) -> Iterable[Uid]:
         return self.index.keys()
 
-    def ancestryOf(self, uid, exact=True, includeSelf=False, reverse=True):
-        if not exact:
-            uid = self.matchId(uid)
-
-        p = []
+    def ancestryOf(self, uid: Uid, includeSelf=False, reverse=True) -> Iterable[Uid]:
+        p: list[Uid] = []
         while uid != TRASH_ID and uid != ROOT_ID:
             if uid not in self.index:
-                # hierarchy is broken: this is a dangling entry
-                return None
+                raise ValueError(f'broken hierarchy: dangling index entry {uid}')
 
             p.append(uid)
 
@@ -593,18 +592,13 @@ class RemarkableIndex:
 
         if not includeSelf:
             p = p[1:]
-        if reverse:
-            p = reversed(p)
-        return p
 
-    def pathOf(
-        self, uid, exact: bool = True, includeSelf: bool = False, delim: str = '/'
-    ) -> str:
-        return delim.join(
-            self.nameOf(x) for x in self.ancestryOf(uid, exact, includeSelf)
-        )
+        return reversed(p) if reverse else p
 
-    def fullPathOf(self, uid, includeSelf: bool = False):
+    def pathOf(self, uid: Uid, includeSelf: bool = False, delim: str = '/') -> str:
+        return delim.join(self.nameOf(x) for x in self.ancestryOf(uid, includeSelf))
+
+    def fullPathOf(self, uid, includeSelf: bool = False) -> str:
         p = self.pathOf(uid, includeSelf=includeSelf)
         if (not includeSelf) or self.isFolder(uid):
             p += '/'
@@ -612,24 +606,18 @@ class RemarkableIndex:
             p = '/' + p
         return p
 
-    def matchId(self, pid):
-        for k in self.index:
-            if k.startswith(pid):
-                return k
-        return None
-
-    def isFolder(self, uid):
+    def isFolder(self, uid: Uid) -> bool:
         return uid in self.index and self.index[uid].type_name in ('folder', 'trash')
 
-    def nameOf(self, uid):
+    def nameOf(self, uid: Uid) -> str:
         return self.get(uid).visibleName
 
-    def isDeleted(self, uid):
+    def isDeleted(self, uid: Uid) -> bool:
         return uid in self.index and (
             self.index[uid].deleted or self.index[uid].parent == TRASH_ID
         )
 
-    def isIndirectlyDeleted(self, uid):
+    def isIndirectlyDeleted(self, uid: Uid) -> bool:
         return any(
             self.isDeleted(a)
             for a in self.ancestryOf(uid, includeSelf=True, reverse=False)
@@ -645,21 +633,20 @@ class RemarkableIndex:
         else:
             raise AttributeError(field)
 
-    def scanFolders(self, uid=ROOT_ID):
-        if isinstance(uid, Entry):
-            n = uid
-        else:
-            n = self.index[uid]
+    def scanFolders(self, uid: Uid = ROOT_ID) -> Iterable[Entry]:
+        n = self.index[uid]
 
-        if isinstance(n, Folder):
-            stack = [n]  # stack of folders
-            while stack:
-                n = stack.pop()
-                yield n
-                for f in n.folders:
-                    stack.append(self.index[f])
+        if not n.isFolder():
+            return []
 
-    def reserve_uid(self) -> str:
+        stack: list[Entry] = [n]
+        while stack:
+            n = stack.pop()
+            yield n
+            for f in n.folders:
+                stack.append(self.index[f])
+
+    def reserve_uid(self) -> Uid:
         # collisions are highly unlikely, but good to check
         uid = str(uuid.uuid4())
         while uid in self.index or uid in self._reserved_uids:
@@ -667,15 +654,15 @@ class RemarkableIndex:
         self._reserved_uids.add(uid)
         return uid
 
-    def newFolder(self, uid: str, progress=None, **metadata):
-        try:
-            if self.isReadOnly():
-                raise RemarkableSourceError(
-                    "The file source '%s' is read-only" % self.fsource.name
-                )
+    def newFolder(self, uid: Uid, progress=None, **metadata):
+        if self.isReadOnly():
+            raise RemarkableSourceError(
+                "The file source '%s' is read-only" % self.fsource.name
+            )
 
+        try:
             log.info('Preparing creation of %s', uid)
-            self._new_entry_prepare(uid, FOLDER, metadata)
+            self._new_entry_prepare(uid, EType.FOLDER, metadata)
 
             def p(x):
                 if callable(progress):
@@ -705,28 +692,30 @@ class RemarkableIndex:
             self.index[d.parent].folders.append(uid)
             self._reserved_uids.discard(uid)
 
-            self._new_entry_complete(uid, FOLDER, metadata)
+            self._new_entry_complete(uid, EType.FOLDER, metadata)
             return uid
         except Exception as e:
             # cleanup if partial upload
             self.fsource.remove(uid + '.metadata')
             self.fsource.remove(uid + '.content')
-            self._new_entry_error(e, uid, FOLDER, metadata)
+            self._new_entry_error(e, uid, EType.FOLDER, metadata)
             raise e
 
-    def newDocument(self, uid: str, path=None, content={}, progress=None, **metadata):
-        try:
-            if self.isReadOnly():
-                raise RemarkableSourceError(
-                    "The file source '%s' is read-only" % self.fsource.name
-                )
+    def newDocument(self, uid: Uid, path=None, content={}, progress=None, **metadata):
+        if self.isReadOnly():
+            raise RemarkableSourceError(
+                "The file source '%s' is read-only" % self.fsource.name
+            )
 
-            path = Path(path)
-            ext = path.suffix.lower()
+        path = Path(path)
+        ext = path.suffix.lower()
+        etype = EType.UNKNOWN
+
+        try:
             if ext == '.pdf':
-                etype = PDF
+                etype = EType.PDF
             elif ext == '.epub':
-                etype = EPUB
+                etype = EType.EPUB
             else:
                 raise RemarkableError(
                     'Can only upload PDF and EPUB files, but was given a %s' % ext
@@ -779,7 +768,7 @@ class RemarkableIndex:
             self.fsource.upload(path, uid + ext, progress=up)
             self.fsource.makeDir(uid)
 
-            if etype == PDF:
+            if etype == EType.PDF:
                 d = PDFBasedDoc(self, uid, meta, cont, type_name='pdf')
             else:
                 d = PDFBasedDoc(self, uid, meta, cont, type_name='epub')
@@ -866,10 +855,10 @@ class RemarkableIndex:
             if not self.isDeleted(uid):
                 self.update(uid, parent=TRASH_ID)
 
-    def rename(self, uid: str, new_name):
+    def rename(self, uid: Uid, new_name):
         self.update(uid, visibleName=new_name)
 
-    def newFolderWith(self, uids: list[str] = [], **metadata) -> None:
+    def newFolderWith(self, uids: list[Uid] = [], **metadata) -> None:
         with self._upd_lock:
             fuid = self.reserve_uid()
             self.newFolder(fuid, **metadata)

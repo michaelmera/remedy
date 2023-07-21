@@ -18,18 +18,16 @@ from PyQt5.QtWidgets import (
 
 from remedy.gui.browser.delegates import NoEditDelegate, PinnedDelegate, StatusDelegate
 from remedy.gui.browser.workers import NewEntryCancelled, NewEntryWorker
-from remedy.remarkable.metadata import (
-    EPUB,
-    FOLDER,
-    PDF,
-    ROOT_ID,
-    UNKNOWN,
-    Document,
-    Entry,
-)
+from remedy.remarkable.metadata import ROOT_ID, Document, Entry, EType
 from remedy.utils import log
 
-DOCTYPE = {PDF: 'pdf', FOLDER: 'folder', EPUB: 'epub', UNKNOWN: 'unknown'}
+DOCTYPE = {
+    EType.PDF: 'pdf',
+    EType.FOLDER: 'folder',
+    EType.EPUB: 'epub',
+    EType.NOTEBOOK: 'notebook',
+    EType.UNKNOWN: 'unknown',
+}
 
 
 def doctype_sortcode(t):

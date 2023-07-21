@@ -75,7 +75,7 @@ class FileSource:
     def cleanup(self) -> None:
         return
 
-    def close(self):
+    def close(self) -> None:
         return
 
     def listItems(self):
@@ -413,7 +413,7 @@ class LiveFileSourceSSH(FileSource):
         except:
             return False
 
-    def close(self):
+    def close(self) -> None:
         self.sftp.close()
         self.ssh.close()
 
